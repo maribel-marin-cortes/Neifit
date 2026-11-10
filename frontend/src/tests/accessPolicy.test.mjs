@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { safeReturnTo, loginLink, loginDestination } from '../src/services/accessPolicy.js';
-import { startGoogleSignIn } from '../src/services/googleAuth.js';
+import { safeReturnTo, loginLink, loginDestination } from '../services/accessPolicy.js';
+import { startGoogleSignIn } from '../services/googleAuth.js';
 
 test('solo permite destinos internos seguros y evita bucles de autenticación', () => {
   for (const value of [null, 'https://example.com', '//example.com', '/\\example.com', '/login', '/registro', '/auth/callback', '/recuperar-contrasena']) {

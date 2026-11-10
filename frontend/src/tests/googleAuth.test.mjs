@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { startGoogleSignIn, finishGoogleSignIn } from '../src/services/googleAuth.js';
+import { startGoogleSignIn, finishGoogleSignIn } from '../services/googleAuth.js';
 
 test('inicia Google con callback del origen actual y sin permisos de Gmail', async () => {
   let options;

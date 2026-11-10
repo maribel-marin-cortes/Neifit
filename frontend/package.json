@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules --test tests/api.test.mjs tests/catalogImages.test.mjs tests/passwordRecovery.test.mjs tests/googleAuth.test.mjs tests/accessPolicy.test.mjs tests/routePermissions.test.mjs",
+    "test": "node --experimental-vm-modules --test src/tests",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"

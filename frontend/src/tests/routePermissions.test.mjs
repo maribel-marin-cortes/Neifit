@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { requiredRoutePermission } from '../src/services/routePermissions.js';
+import { requiredRoutePermission } from '../services/routePermissions.js';
 
 test('módulos requieren permisos específicos', () => {
   assert.equal(requiredRoutePermission('/catalogo'), 'catalog.read');

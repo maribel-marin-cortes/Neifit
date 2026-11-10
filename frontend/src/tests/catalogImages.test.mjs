@@ -1,13 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { access } from 'node:fs/promises';
-import { resolveImageSource, PRODUCT_IMAGE_FALLBACK, isIllustrativeImage } from '../src/services/catalogImages.js';
-import { initialProducts, initialCategories } from '../src/services/mockData.js';
+import { resolveImageSource, PRODUCT_IMAGE_FALLBACK, isIllustrativeImage } from '../services/catalogImages.js';
+import { initialProducts, initialCategories } from '../services/mockData.js';
 
 test('todas las imágenes del catálogo y categorías son archivos locales existentes', async () => {
   for (const image of [...initialProducts.map(p => p.image_url), ...initialCategories.map(c => c.image)]) {
     assert.ok(image.startsWith('/images/'), image);
-    await access(new URL(`../public${image}`, import.meta.url));
+    await access(new URL(`../../public${image}`, import.meta.url));
     assert.equal(isIllustrativeImage(image), true);
   }
 });
@@ -24,7 +24,7 @@ test('el carrito antiguo encuentra las nuevas fotos de los snacks con URL rota',
 
 test('los productos sin imagen tienen un respaldo local existente', async () => {
   for (const value of [null, undefined, '', '   ']) assert.equal(resolveImageSource(value), PRODUCT_IMAGE_FALLBACK);
-  await access(new URL(`../public${PRODUCT_IMAGE_FALLBACK}`, import.meta.url));
+  await access(new URL(`../../public${PRODUCT_IMAGE_FALLBACK}`, import.meta.url));
 });
 
 test('las fotos personalizadas y las imágenes de marca se conservan', () => {

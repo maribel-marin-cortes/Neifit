@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createPasswordRecovery, hasRecoveryLinkError, isRecoveryCallback, readRecoveryTokenHash, RECOVERY_SENT_MESSAGE } from '../src/services/passwordRecovery.js';
+import { createPasswordRecovery, hasRecoveryLinkError, isRecoveryCallback, readRecoveryTokenHash, RECOVERY_SENT_MESSAGE } from '../services/passwordRecovery.js';
 
 function setup(options = {}) {
   let callback;

@@ -47,7 +47,7 @@ async function loadApi(configured, fetchImpl, session = { access_token: 'supabas
       refreshSession: async () => { const result = await refresh(); if (result.data?.session) session = result.data.session; return result; },
     } });
   }, { context });
-  const source = await readFile(new URL('../src/services/api.js', import.meta.url), 'utf8');
+  const source = await readFile(new URL('../services/api.js', import.meta.url), 'utf8');
   const module = new vm.SourceTextModule(source, {
     context, initializeImportMeta(meta) { meta.env = {}; },
   });
