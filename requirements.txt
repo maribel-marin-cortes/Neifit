@@ -1,0 +1,3 @@
+# Compatibilidad con servicios de despliegue que compilan el monorepositorio
+# desde su directorio raiz. Las dependencias reales del API se fijan en backend.
+-r backend/requirements.txt
