@@ -17,12 +17,14 @@ PERMISSIONS = {
     'quotes.manage': 'Gestionar cotizaciones',
     'content.manage': 'Gestionar contenido institucional',
     'access.manage': 'Gestionar roles y permisos',
+    'users.manage': 'Gestionar usuarios y registrar mensajeros',
 }
 ROLE_PERMISSIONS = {
     'cliente': ['catalog.read', 'orders.create', 'orders.read_own', 'quotes.create', 'quotes.read_own', 'profile.read'],
     'mensajeria': ['delivery.read_assigned', 'delivery.start', 'delivery.complete', 'delivery.issue', 'profile.read'],
     'admin': list(PERMISSIONS),
 }
+CUSTOM_ROLE_PERMISSIONS = [code for code in PERMISSIONS if code not in {'access.manage', 'users.manage'}]
 DELIVERY_STATUS_PERMISSIONS = {
     'despachado': 'delivery.start', 'en_ruta': 'delivery.start',
     'entregado': 'delivery.complete', 'novedad': 'delivery.issue',
@@ -60,7 +62,7 @@ def authorize_delivery_update(user: dict, order: dict, status: str):
 
 
 def project_order(user: dict, order: dict) -> dict:
-    if has_permission(user, 'orders.manage') or has_permission(user, 'orders.read_own'):
+    if has_permission(user, 'orders.manage') or (has_permission(user, 'orders.read_own') and order.get('user_id') == user.get('id')):
         return order
     allowed = ['id', 'order_number', 'customer_name', 'customer_phone', 'address', 'order_status',
                'notes', 'assigned_delivery_user_id', 'tracking_history', 'created_at']

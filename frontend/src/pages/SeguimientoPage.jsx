@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { Search, Package, Loader2, CheckCircle, Clock, Truck, AlertTriangle, XCircle } from 'lucide-react';
 
@@ -17,19 +17,20 @@ const STATUS_CONFIG = {
 
 export default function SeguimientoPage() {
   const [searchParams] = useSearchParams();
-  const [code, setCode] = useState(searchParams.get('codigo') || '');
+  const params = useParams();
+  const initialCode = searchParams.get('codigo') || params.codigo || '';
+  const [code, setCode] = useState(initialCode);
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!code.trim()) return;
+  const search = async value => {
+    if (!value.trim()) return;
     setLoading(true);
     setError(null);
     setOrder(null);
     try {
-      const result = await api.getOrderByTrackingCode(code.trim());
+      const result = await api.getOrderByTrackingCode(value.trim());
       setOrder(result);
     } catch (err) {
       setError(err.message || 'No se encontró el pedido. Verifica el código.');
@@ -37,6 +38,8 @@ export default function SeguimientoPage() {
       setLoading(false);
     }
   };
+  useEffect(() => { if (initialCode) { setCode(initialCode); search(initialCode); } }, [initialCode]);
+  const handleSearch = e => { e.preventDefault(); search(code); };
 
   const currentStatus = order ? STATUS_CONFIG[order.order_status] : null;
 
@@ -56,7 +59,7 @@ export default function SeguimientoPage() {
               type="text"
               value={code}
               onChange={e => setCode(e.target.value)}
-              placeholder="Ej: NF-2026-001"
+              placeholder="Número de pedido recibido al comprar"
               className="w-full pl-10 pr-4 py-3 bg-[#FFF8F2] border border-[#7A4E2D]/25 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7A4E2D]/30 text-[#4B2E1F] uppercase tracking-widest placeholder-normal"
             />
           </div>

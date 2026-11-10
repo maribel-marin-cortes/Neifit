@@ -1,11 +1,12 @@
 """
-ProductService — capa de lógica de negocio para productos.
-En producción se conecta a Supabase PostgreSQL via DATABASE_URL.
-Incluye datos mock para desarrollo sin BD configurada.
+ProductService — Supabase REST cuando existe configuración de servidor.
+Los ejemplos solo se usan sin Supabase configurado; nunca como fallback de errores.
 """
 from typing import List, Optional
 from datetime import datetime
 from app.schemas.product import ProductCreate, ProductUpdate, ProductOut
+from app.core.supabase_rest import database_enabled
+from app.services.commerce_repository import commerce
 
 
 MOCK_PRODUCTS = [
@@ -30,8 +31,10 @@ class ProductService:
         self._data = {p["id"]: p for p in MOCK_PRODUCTS}
 
     async def list_products(
-        self, category=None, search=None, featured=None, available=None
+        self, category=None, search=None, featured=None, available=None, include_inactive=False
     ) -> List[dict]:
+        if database_enabled():
+            return await commerce.products(category, search, featured, available, include_inactive)
         items = list(self._data.values())
         if category:
             items = [p for p in items if p["category_slug"] == category or p["category_id"] == category]
@@ -44,13 +47,17 @@ class ProductService:
             items = [p for p in items if p["is_available"] == available]
         return items
 
-    async def get_by_slug(self, slug: str) -> Optional[dict]:
+    async def get_by_slug(self, slug: str, include_inactive=False) -> Optional[dict]:
+        if database_enabled():
+            return await commerce.product(slug, include_inactive)
         for p in self._data.values():
             if p["slug"] == slug or p["id"] == slug:
                 return p
         return None
 
-    async def create(self, data: ProductCreate) -> dict:
+    async def create(self, data: ProductCreate, user=None) -> dict:
+        if database_enabled():
+            return await commerce.save_product(data, user)
         import uuid
         product_id = str(uuid.uuid4())
         slug = data.slug or data.name.lower().replace(" ", "-").replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u")
@@ -65,7 +72,9 @@ class ProductService:
         self._data[product_id] = product
         return product
 
-    async def update(self, product_id: str, data: ProductUpdate) -> Optional[dict]:
+    async def update(self, product_id: str, data: ProductUpdate, user=None) -> Optional[dict]:
+        if database_enabled():
+            return await commerce.save_product(data, user, product_id)
         if product_id not in self._data:
             return None
         product = self._data[product_id].copy()
@@ -77,7 +86,9 @@ class ProductService:
         self._data[product_id] = product
         return product
 
-    async def delete(self, product_id: str) -> bool:
+    async def delete(self, product_id: str, user=None) -> bool:
+        if database_enabled():
+            return await commerce.deactivate_product(product_id, user)
         if product_id in self._data:
             del self._data[product_id]
             return True

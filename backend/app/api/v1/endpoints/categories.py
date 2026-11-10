@@ -9,7 +9,7 @@ service = CategoryService()
 
 
 @router.get("/", response_model=List[CategoryOut])
-async def list_categories(user=Depends(require_permission('catalog.read'))):
+async def list_categories(user=Depends(require_permission('catalog.read', 'products.manage', 'quotes.create'))):
     """Lista pública de categorías activas."""
     return await service.list_active()
 

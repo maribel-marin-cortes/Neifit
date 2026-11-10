@@ -2,10 +2,24 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Union
 from app.schemas.order import OrderOut, OrderCreate, OrderStatusUpdate, DeliveryOrderOut
 from app.core.security import require_auth, require_admin, require_mensajeria_or_admin, require_permission
-from app.services.order_service import OrderService
+from app.services.order_service import order_service
+from app.services.commerce_repository import commerce
+from app.schemas.order import DeliveryAssignment
+from uuid import UUID
+from app.core.config import settings
 
 router = APIRouter()
-service = OrderService()
+service = order_service
+
+
+@router.get('/delivery-users')
+async def delivery_users(user=Depends(require_permission('orders.manage'))):
+    return await commerce.delivery_users()
+
+
+@router.patch('/{order_id}/delivery')
+async def assign_delivery(order_id: UUID, data: DeliveryAssignment, user=Depends(require_permission('orders.manage'))):
+    return await commerce.assign_delivery(str(order_id), str(data.user_id) if data.user_id else None, user)
 
 
 @router.get("/", response_model=List[Union[OrderOut, DeliveryOrderOut]])
@@ -26,6 +40,8 @@ async def create_order(data: OrderCreate, user=Depends(require_permission('order
     El backend valida stock de forma atómica y rechaza si hay producto agotado.
     Nunca confiar en stock declarado por el frontend.
     """
+    if settings.APP_ENV == 'production' and data.payment_method != 'contraentrega':
+        raise HTTPException(422, 'En el piloto solo está habilitado el pago contraentrega')
     return await service.create_order(data, user)
 
 

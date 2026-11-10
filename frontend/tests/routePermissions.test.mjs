@@ -4,6 +4,7 @@ import { requiredRoutePermission } from '../src/services/routePermissions.js';
 
 test('módulos requieren permisos específicos', () => {
   assert.equal(requiredRoutePermission('/catalogo'), 'catalog.read');
+  assert.equal(requiredRoutePermission('/usuarios'), 'users.manage');
   assert.equal(requiredRoutePermission('/carrito'), 'orders.create');
   assert.equal(requiredRoutePermission('/cotizador'), 'quotes.create');
   assert.equal(requiredRoutePermission('/mensajeria'), 'delivery.read_assigned');

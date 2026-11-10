@@ -1,0 +1,213 @@
+{
+  "tipo": "Datos inventados autorizados para presentación; dos aprobaciones de pago simuladas, sin fondos reales.",
+  "productos": [
+    {
+      "id": "6dfaf7a8-17a0-42e3-9879-4fb117c4475a",
+      "nombre": "Postre de Maracuyá",
+      "precio": 12500.0,
+      "descripcion": "Postre de maracuyá de la selección Neifit."
+    },
+    {
+      "id": "f9f7574d-e6fc-48a4-a53f-07d3d63fe883",
+      "nombre": "Mousse de Mango",
+      "precio": 13000.0,
+      "descripcion": "Mousse de mango de nuestra selección de postres."
+    },
+    {
+      "id": "d58f8ace-ea2e-491c-83d2-2430feb4ddcd",
+      "nombre": "Postre de Fresa",
+      "precio": 13500.0,
+      "descripcion": "Postre de fresa para acompañar tus momentos especiales."
+    },
+    {
+      "id": "0c03dae4-d52c-4946-b315-b227ac5b2ce8",
+      "nombre": "Postre de Melocotón",
+      "precio": 12800.0,
+      "descripcion": "Postre de melocotón de la selección Neifit."
+    },
+    {
+      "id": "fa2633bc-90b3-4009-a43d-55eedc17b0c4",
+      "nombre": "Postre de Chontaduro",
+      "precio": 14500.0,
+      "descripcion": "Postre de chontaduro de nuestra selección de sabores tropicales."
+    },
+    {
+      "id": "7c45bc2b-206b-4b3b-896e-6b1967712c91",
+      "nombre": "Postre Regional",
+      "precio": 14000.0,
+      "descripcion": "Una opción de nuestra selección de postres regionales."
+    },
+    {
+      "id": "2982ed0c-338e-4dde-bcfb-6eb6f42aac65",
+      "nombre": "Cocadas",
+      "precio": 8500.0,
+      "descripcion": "Cocadas de la selección de snacks Neifit."
+    },
+    {
+      "id": "4d92bdc1-2738-4392-8ced-0f149c4d07d1",
+      "nombre": "Dátiles con Crema de Maní",
+      "precio": 11000.0,
+      "descripcion": "Dátiles con crema de maní de nuestra selección de snacks."
+    },
+    {
+      "id": "5ed60197-7ecf-4219-8a7e-dea338b78459",
+      "nombre": "Maní Tostado",
+      "precio": 6000.0,
+      "descripcion": "Maní tostado para disfrutar como snack."
+    },
+    {
+      "id": "5faae3c5-2088-43c8-8561-7fe57cbc5ce2",
+      "nombre": "Mix de Frutos Secos",
+      "precio": 12000.0,
+      "descripcion": "Mix de frutos secos para acompañar tus momentos del día."
+    },
+    {
+      "id": "5e137652-4177-4676-89a8-90d60f8149c2",
+      "nombre": "Bebida Tropical 1",
+      "precio": 22000.0,
+      "descripcion": "Bebida de la selección tropical Neifit."
+    },
+    {
+      "id": "ea675481-0a55-4de8-b3de-9e859c8fb3fa",
+      "nombre": "Bebida Tropical 2",
+      "precio": 24000.0,
+      "descripcion": "Otra opción de nuestra selección de bebidas tropicales."
+    },
+    {
+      "id": "d7e8f158-9a07-43b9-ae71-abffe8b7ede5",
+      "nombre": "Bebida Tropical 3",
+      "precio": 25000.0,
+      "descripcion": "Bebida para acompañar tus postres y snacks favoritos."
+    }
+  ],
+  "cotizaciones": [
+    {
+      "id": "59fac4cc-62a1-4ce3-8640-a1fd2e14cee6",
+      "numero": "COT-6c1daa54-b43d-4928-a3dd-090707e91a0d",
+      "estado": "pendiente",
+      "cliente": "Camila Torres"
+    },
+    {
+      "id": "2dd93336-0328-46be-b56a-b7017aaa48ad",
+      "numero": "COT-d4614897-72e9-45fa-bc92-d6de232e12ee",
+      "estado": "pendiente",
+      "cliente": "Mateo Ríos"
+    },
+    {
+      "id": "1d31b4d0-d5de-45be-b3c4-f1b6fe61ccc9",
+      "numero": "COT-637d4ba4-662b-4737-b65a-df8ad45100ae",
+      "estado": "respondida",
+      "cliente": "Laura Gómez"
+    }
+  ],
+  "pedidos": [
+    {
+      "id": "9774f803-9e89-45ac-b0f5-59ab6fb33a39",
+      "numero": "NF-09540df6-187c-4a7a-8416-9357081a46e7",
+      "estado": "recibido",
+      "pago": "aprobado",
+      "total": 43500.0,
+      "cliente": "Camila Torres",
+      "pago_simulado": true
+    },
+    {
+      "id": "09a376d6-7ba0-447e-a4b0-d95cc2787fda",
+      "numero": "NF-019e82d2-4914-4691-ae3e-214d035a79af",
+      "estado": "en_preparacion",
+      "pago": "aprobado",
+      "total": 45500.0,
+      "cliente": "Mateo Ríos",
+      "pago_simulado": true
+    },
+    {
+      "id": "6140f9b3-8d5e-466c-a2f2-bd465b115aab",
+      "numero": "NF-2b5050ca-7f23-485a-9128-3d7aa9c8e7b0",
+      "estado": "recibido",
+      "pago": "pendiente",
+      "total": 69500.0,
+      "cliente": "Laura Gómez",
+      "pago_simulado": false
+    }
+  ],
+  "existencias_finales": [
+    {
+      "id": "5e137652-4177-4676-89a8-90d60f8149c2",
+      "name": "Bebida Tropical 1",
+      "stock": 8,
+      "price": 22000.0
+    },
+    {
+      "id": "ea675481-0a55-4de8-b3de-9e859c8fb3fa",
+      "name": "Bebida Tropical 2",
+      "stock": 6,
+      "price": 24000.0
+    },
+    {
+      "id": "d7e8f158-9a07-43b9-ae71-abffe8b7ede5",
+      "name": "Bebida Tropical 3",
+      "stock": 5,
+      "price": 25000.0
+    },
+    {
+      "id": "2982ed0c-338e-4dde-bcfb-6eb6f42aac65",
+      "name": "Cocadas",
+      "stock": 10,
+      "price": 8500.0
+    },
+    {
+      "id": "4d92bdc1-2738-4392-8ced-0f149c4d07d1",
+      "name": "Dátiles con Crema de Maní",
+      "stock": 10,
+      "price": 11000.0
+    },
+    {
+      "id": "5ed60197-7ecf-4219-8a7e-dea338b78459",
+      "name": "Maní Tostado",
+      "stock": 3,
+      "price": 6000.0
+    },
+    {
+      "id": "5faae3c5-2088-43c8-8561-7fe57cbc5ce2",
+      "name": "Mix de Frutos Secos",
+      "stock": 10,
+      "price": 12000.0
+    },
+    {
+      "id": "f9f7574d-e6fc-48a4-a53f-07d3d63fe883",
+      "name": "Mousse de Mango",
+      "stock": 8,
+      "price": 13000.0
+    },
+    {
+      "id": "fa2633bc-90b3-4009-a43d-55eedc17b0c4",
+      "name": "Postre de Chontaduro",
+      "stock": 3,
+      "price": 14500.0
+    },
+    {
+      "id": "d58f8ace-ea2e-491c-83d2-2430feb4ddcd",
+      "name": "Postre de Fresa",
+      "stock": 5,
+      "price": 13500.0
+    },
+    {
+      "id": "6dfaf7a8-17a0-42e3-9879-4fb117c4475a",
+      "name": "Postre de Maracuyá",
+      "stock": 11,
+      "price": 12500.0
+    },
+    {
+      "id": "0c03dae4-d52c-4946-b315-b227ac5b2ce8",
+      "name": "Postre de Melocotón",
+      "stock": 6,
+      "price": 12800.0
+    },
+    {
+      "id": "7c45bc2b-206b-4b3b-896e-6b1967712c91",
+      "name": "Postre Regional",
+      "stock": 0,
+      "price": 14000.0
+    }
+  ],
+  "identificacion_interna": "UUID/request_id del conjunto y payment_transactions.raw_response.simulated. No representa operaciones reales."
+}

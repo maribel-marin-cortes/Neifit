@@ -1,17 +1,20 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from datetime import datetime
 
 
 class ProductBase(BaseModel):
-    name: str
-    slug: Optional[str] = None
+    name: str = Field(min_length=3,max_length=150,pattern=r'.*\S.*')
+    slug: Optional[str] = Field(default=None,pattern=r'^[a-z0-9]+(?:-[a-z0-9]+)*$')
     description: Optional[str] = None
-    price: float
+    price: float = Field(gt=0,allow_inf_nan=False)
     stock: int = 0
     is_available: Optional[bool] = None
     image_url: Optional[str] = None
     featured: bool = False
+    is_active: bool = True
+    ingredients: Optional[str] = None
+    allergens: Optional[str] = None
     category_id: Optional[str] = None
     category_name: Optional[str] = None
     category_slug: Optional[str] = None
@@ -32,7 +35,7 @@ class ProductBase(BaseModel):
 
 
 class ProductCreate(ProductBase):
-    pass
+    category_id: str = Field(min_length=1)
 
 
 class ProductPreview(BaseModel):
@@ -48,18 +51,24 @@ class ProductPreview(BaseModel):
 
 
 class ProductUpdate(BaseModel):
-    name: Optional[str] = None
+    expected_updated_at: Optional[datetime] = None
+    name: Optional[str] = Field(default=None,min_length=3,max_length=150,pattern=r'.*\S.*')
+    slug: Optional[str] = Field(default=None,pattern=r'^[a-z0-9]+(?:-[a-z0-9]+)*$')
     description: Optional[str] = None
-    price: Optional[float] = None
-    stock: Optional[int] = None
+    price: Optional[float] = Field(default=None,gt=0,allow_inf_nan=False)
+    stock: Optional[int] = Field(default=None,ge=0)
     is_available: Optional[bool] = None
     image_url: Optional[str] = None
     featured: Optional[bool] = None
     category_id: Optional[str] = None
+    is_active: Optional[bool] = None
+    ingredients: Optional[str] = None
+    allergens: Optional[str] = None
 
 
 class ProductOut(ProductBase):
     id: str
+    sales_enabled: Optional[bool] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

@@ -76,7 +76,7 @@ ENABLE_DEMO_AUTH=false
 DEBUG=true
 ```
 
-`DATABASE_URL` puede quedar vacía: la consulta del perfil usa Supabase REST mediante `httpx`. Agregar una cadena PostgreSQL no conecta automáticamente los servicios comerciales que todavía usan memoria.
+`DATABASE_URL` puede quedar vacía: perfiles y servicios comerciales utilizan Supabase REST y RPC mediante `httpx`. Para activar los servicios comerciales debes aplicar la migración 0005 siguiendo **PERSISTENCIA_SUPABASE.md**.
 
 ## 7. Reiniciar los servicios
 
@@ -150,7 +150,7 @@ Este ejemplo es para Vite en desarrollo y no imprime el token. Debe mostrar **20
 | `503 Autenticación no configurada` | Completar las cuatro variables Supabase del backend y reiniciar |
 | Error CORS | Dirección exacta del frontend en `ALLOWED_ORIGINS` |
 | Siguen apareciendo botones demo | Reiniciar Vite y revisar sus dos variables Supabase |
-| El catálogo muestra ejemplos | La API comercial todavía usa memoria; su conexión es un trabajo pendiente |
+| El catálogo está vacío | Revisa `products` en Supabase y registra productos reales desde Administración; no se copian los ejemplos automáticamente |
 
 Corrección local de CORS: el archivo `backend/.env` sobrescribe los valores predeterminados del código. Debe incluir `http://127.0.0.1:5173` si se navega con esa dirección. Se unificó `VITE_API_BASE_URL` en `http://127.0.0.1:8000/api/v1` y se reiniciaron ambos servidores. Comprobadas solicitudes OPTIONS y GET de productos/categorías con respuesta 200 y `Access-Control-Allow-Origin` correcto. Después de cambiar estas variables, reiniciar ambos servidores y recargar el navegador.
 
@@ -158,7 +158,7 @@ Esta entrega prepara la base y la conexión de **autenticación/perfiles**. Prod
 
 Las futuras operaciones con `service_role` deben validar roles, asignaciones, precios y stock en backend: esa clave elude RLS. El navegador no puede escribir directamente en tablas comerciales. Tampoco puede cargar/borrar archivos: usa el Dashboard o un futuro endpoint autorizado. Las evidencias privadas deberán entregarse solo a usuarios autorizados mediante backend.
 
-Al configurar Supabase, el frontend propaga errores de API y deja de simular éxitos mediante almacenamiento local. La API aún puede devolver datos de memoria; se reemplazarán al integrar los repositorios.
+Al configurar Supabase, frontend y backend propagan errores sin simular guardados. La versión actual integra los repositorios comerciales; requiere las tablas y funciones de la migración 0005. El modo de memoria solo se utiliza cuando no hay configuración de Supabase.
 
 Verificación local: ambos SQL pasan el análisis de sintaxis PostgreSQL con pglast; 10 pruebas de backend y 5 de frontend aprobadas, y compilación frontend correcta. El SQL no se ha aplicado a tu proyecto remoto. Usa el archivo de verificación después de instalarlo; el análisis de sintaxis no comprueba los permisos ni la ejecución en Supabase.
 

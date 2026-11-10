@@ -1,3 +1,4 @@
+from unittest.mock import patch
 import unittest
 from copy import deepcopy
 from unittest.mock import AsyncMock, patch
@@ -12,6 +13,7 @@ from app.schemas.order import OrderStatusUpdate
 from app.services.access_service import AccessService
 
 
+@patch.multiple('app.core.supabase_rest.settings', SUPABASE_URL='', SUPABASE_SERVICE_ROLE_KEY='')
 class PermissionApiTests(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
@@ -52,6 +54,7 @@ class PermissionApiTests(unittest.TestCase):
             self.assertEqual(rpc.call_args.kwargs['json']['p_role'], 'mensajeria')
 
 
+@patch.multiple('app.core.supabase_rest.settings', SUPABASE_URL='', SUPABASE_SERVICE_ROLE_KEY='')
 class DeliveryPermissionTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.service = OrderService()
@@ -91,6 +94,7 @@ class DeliveryPermissionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(error.exception.status_code, 409)
 
 
+@patch.multiple('app.core.supabase_rest.settings', SUPABASE_URL='', SUPABASE_SERVICE_ROLE_KEY='')
 class AccessLookupTests(unittest.IsolatedAsyncioTestCase):
     async def test_empty_database_permissions_do_not_restore_defaults(self):
         service = AccessService()

@@ -1,4 +1,5 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
+from uuid import UUID
 from typing import Optional, List
 from datetime import datetime
 
@@ -7,8 +8,8 @@ class OrderItemCreate(BaseModel):
     product_id: str
     product_name: Optional[str] = None
     quantity: int
-    unit_price: float
-    subtotal: float
+    unit_price: float = Field(default=0,ge=0,allow_inf_nan=False)
+    subtotal: float = Field(default=0,ge=0,allow_inf_nan=False)
 
     @field_validator("quantity")
     @classmethod
@@ -19,17 +20,22 @@ class OrderItemCreate(BaseModel):
 
 
 class OrderCreate(BaseModel):
+    request_id: Optional[UUID] = None
     user_id: Optional[str] = None
-    customer_name: str
-    customer_phone: str
+    customer_name: str = Field(min_length=3,max_length=100,pattern=r'.*\S.*')
+    customer_phone: str = Field(min_length=7,max_length=30)
     customer_email: Optional[str] = None
-    address: str
+    address: str = Field(min_length=5,max_length=300,pattern=r'.*\S.*')
     payment_method: str = "contraentrega"
-    notes: Optional[str] = None
-    subtotal: float
-    shipping_cost: float = 5000
-    total: float
-    items: List[OrderItemCreate]
+    notes: Optional[str] = Field(default=None,max_length=3000)
+    subtotal: float = Field(default=0,ge=0,allow_inf_nan=False)
+    shipping_cost: float = Field(default=0,ge=0,allow_inf_nan=False)
+    total: float = Field(default=0,ge=0,allow_inf_nan=False)
+    items: List[OrderItemCreate] = Field(min_length=1,max_length=100)
+
+
+class DeliveryAssignment(BaseModel):
+    user_id: Optional[UUID] = None
 
 
 class OrderStatusUpdate(BaseModel):
@@ -52,6 +58,7 @@ class TrackingEvent(BaseModel):
 
 
 class OrderOut(BaseModel):
+    is_simulated: bool = False
     id: str
     order_number: str
     user_id: Optional[str] = None

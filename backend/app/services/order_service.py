@@ -3,6 +3,8 @@ from typing import List, Optional
 import uuid
 from datetime import datetime
 from app.schemas.order import OrderCreate, OrderStatusUpdate
+from app.core.supabase_rest import database_enabled
+from app.services.commerce_repository import commerce
 
 
 MOCK_ORDERS = [
@@ -73,10 +75,14 @@ class OrderService:
         self._counter = len(MOCK_ORDERS) + 1
 
     async def list_for_user(self, user: dict) -> List[dict]:
+        if database_enabled():
+            return await commerce.orders(user)
         return [project_order(user, order) for order in self._data.values() if can_read_order(user, order)]
 
     async def create_order(self, data: OrderCreate, user: dict) -> dict:
-        # En producción: validar stock atómicamente con transacción PostgreSQL
+        if database_enabled():
+            return await commerce.create_document('order', data, user)
+        # Demostración local sin Supabase; la rama persistente usa RPC transaccional.
         order_id = str(uuid.uuid4())
         order_number = f"NF-2026-{self._counter:03d}"
         self._counter += 1
@@ -89,7 +95,7 @@ class OrderService:
             "customer_email": data.customer_email,
             "address": data.address,
             "order_status": "recibido",
-            "payment_status": "pendiente" if data.payment_method == "contraentrega" else "aprobado",
+            "payment_status": "pendiente",
             "payment_method": data.payment_method,
             "subtotal": data.subtotal,
             "shipping_cost": data.shipping_cost,
@@ -107,12 +113,18 @@ class OrderService:
         return order
 
     async def get_by_id(self, order_id: str, user: dict) -> Optional[dict]:
+        if database_enabled():
+            rows = await commerce.orders(user, order_id=order_id)
+            return rows[0] if rows else None
         order = self._data.get(order_id)
         if not order:
             return None
         return project_order(user, order) if can_read_order(user, order) else None
 
-    async def get_by_tracking_code(self, code: str) -> Optional[dict]:
+    async def get_by_tracking_code(self, code: str, user=None) -> Optional[dict]:
+        if database_enabled():
+            rows = await commerce.orders(user, tracking=code)
+            return rows[0] if rows else None
         code_clean = code.strip().upper()
         for order in self._data.values():
             if order["order_number"].upper() == code_clean or order["id"] == code:
@@ -120,6 +132,8 @@ class OrderService:
         return None
 
     async def update_status(self, order_id: str, data: OrderStatusUpdate, user: dict) -> Optional[dict]:
+        if database_enabled():
+            return await commerce.update_order(order_id, data, user)
         order = self._data.get(order_id)
         if not order:
             return None
@@ -134,4 +148,8 @@ class OrderService:
         order["tracking_history"] = history
         self._data[order_id] = order
         return project_order(user, order)
+
+
+# Pedidos y seguimiento deben consultar el mismo almacén de demostración.
+order_service = OrderService()
 

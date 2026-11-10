@@ -3,6 +3,8 @@ from typing import List
 import uuid
 from datetime import datetime
 from app.schemas.quote import QuoteCreate
+from app.core.supabase_rest import database_enabled
+from app.services.commerce_repository import commerce
 
 MOCK_QUOTES = [
     {
@@ -27,12 +29,16 @@ class QuoteService:
         self._counter = len(MOCK_QUOTES) + 1
 
     async def list_for_user(self, user: dict) -> List[dict]:
+        if database_enabled():
+            return await commerce.quotes(user)
         if has_permission(user, 'quotes.manage'):
             return sorted(self._data.values(), key=lambda q: q["created_at"], reverse=True)
         uid = user.get("id")
         return [q for q in self._data.values() if has_permission(user, 'quotes.read_own') and q.get("user_id") == uid]
 
     async def create(self, data: QuoteCreate, user: dict) -> dict:
+        if database_enabled():
+            return await commerce.create_document('quote', data, user)
         qid = str(uuid.uuid4())
         quote_number = f"COT-2026-{self._counter:03d}"
         self._counter += 1

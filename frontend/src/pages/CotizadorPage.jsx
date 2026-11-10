@@ -12,9 +12,10 @@ export default function CotizadorPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
+  const [requestId] = useState(() => crypto.randomUUID());
 
   useEffect(() => {
-    api.getProducts({ available: true }).then(setProducts).catch(() => {});
+    api.getProducts({ available: true }).then(setProducts).catch(err => setError(err.message));
   }, []);
 
   const addProduct = (product) => {
@@ -46,6 +47,7 @@ export default function CotizadorPage() {
     setError(null);
     try {
       const quote = await api.createQuote({
+        request_id: requestId,
         ...form,
         items: selectedItems.map(i => ({
           product_id: i.id,

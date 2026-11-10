@@ -5,8 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { requiredRoutePermission } from '../services/routePermissions';
 
-export default function Sidebar({ open, onNavigate }) {
-  const { user, isAdmin, isMensajeria, hasPermission } = useAuth();
+export default function Sidebar({ open }) {
+  const { user, isMensajeria, hasPermission } = useAuth();
   const { totalItemsCount } = useCart();
   const { pathname, search } = useLocation();
   const params = new URLSearchParams(search);
@@ -21,6 +21,7 @@ export default function Sidebar({ open, onNavigate }) {
     { title: 'Compras y pedidos', items: [
       { to: '/carrito', label: 'Carrito de compras', icon: ShoppingBag, count: totalItemsCount },
       { to: '/cotizador', label: 'Cotizador', icon: FileText },
+      { to: '/mis-cotizaciones', label: 'Mis cotizaciones', icon: FileText },
       { to: '/seguimiento', label: 'Seguimiento de pedido', icon: MapPin },
       ...(user && !isMensajeria ? [{ to: '/mis-pedidos', label: 'Mis pedidos', icon: ClipboardList }] : []),
     ] },
@@ -28,19 +29,29 @@ export default function Sidebar({ open, onNavigate }) {
       ? [{ to: '/mi-cuenta', label: 'Mi perfil', icon: User }]
       : [{ to: '/login', label: 'Iniciar sesión', icon: LogIn }] },
   ];
-  if (isAdmin) groups.push({ title: 'Administración', items: [
+  groups.push({ title: 'Administración', items: [
     { to: '/admin', label: 'Resumen', icon: LayoutDashboard },
     { to: '/admin?modulo=productos', label: 'Productos e inventario', icon: Package },
     { to: '/admin?modulo=pedidos', label: 'Pedidos', icon: ShoppingBag },
     { to: '/admin?modulo=cotizaciones', label: 'Cotizaciones', icon: FileText },
+    { to: '/admin?modulo=contenido', label: 'Contenido institucional', icon: FileText },
     { to: '/admin?modulo=accesos', label: 'Roles y permisos', icon: User },
+    { to: '/usuarios', label: 'Usuarios', icon: User },
   ] });
-  if (isAdmin || isMensajeria) groups.push({ title: 'Entregas', items: [
+  groups.push({ title: 'Entregas', items: [
     { to: '/mensajeria', label: 'Mensajería', icon: Truck },
   ] });
-  const visibleGroups = isMensajeria
+  const roleGroups = isMensajeria
     ? [{ title: 'Principal', items: [{ to: '/', label: 'Inicio', icon: Home }] }, ...groups.filter(group => ['Mi cuenta', 'Entregas'].includes(group.title))]
     : groups;
+  const visibleGroups = roleGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => {
+      const url = new URL(item.to, 'https://neifit.invalid');
+      const permission = requiredRoutePermission(url.pathname, url.search);
+      return !permission || hasPermission(permission);
+    }),
+  })).filter(group => group.items.length > 0);
 
   function isActive(to) {
     const target = new URL(to, 'https://neifit.invalid');
@@ -57,14 +68,10 @@ export default function Sidebar({ open, onNavigate }) {
           {visibleGroups.map(group => <div key={group.title}>
             <p className="text-[11px] font-bold uppercase tracking-wider text-[#7A4E2D] mb-2 px-3">{group.title}</p>
             <ul className="space-y-1">
-              {group.items.filter(item => {
-                const url = new URL(item.to, 'https://neifit.invalid');
-                const permission = requiredRoutePermission(url.pathname, url.search);
-                return !permission || hasPermission(permission);
-              }).map(({ to, label, icon: Icon, count }) => {
+              {group.items.map(({ to, label, icon: Icon, count }) => {
                 const active = isActive(to);
                 return <li key={to}>
-                  <Link to={to} onClick={onNavigate} aria-current={active ? 'page' : undefined}
+                  <Link to={to} aria-current={active ? 'page' : undefined}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7A4E2D] ${active ? 'bg-[#7A4E2D] text-white' : 'text-[#4B2E1F] hover:bg-[#F6E7D8]'}`}>
                     <Icon aria-hidden="true" className="w-[18px] h-[18px] shrink-0" />
                     <span className="flex-1">{label}</span>

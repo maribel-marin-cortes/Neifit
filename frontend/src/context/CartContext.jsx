@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { api } from '../services/api';
+import { isSupabaseConfigured } from '../services/supabaseClient';
 
 const CartContext = createContext();
 
@@ -8,11 +10,18 @@ export function CartProvider({ children }) {
   const [items, setItems] = useState(() => {
     try {
       const saved = localStorage.getItem('neifit_cart');
-      return saved ? JSON.parse(saved) : [];
+      const parsed = saved ? JSON.parse(saved) : [];
+      // Retirar identificadores demo que no existen en el catálogo persistente.
+      return isSupabaseConfigured ? parsed.filter(item => /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(item.id)) : parsed;
     } catch {
       return [];
     }
   });
+  const [shippingRate, setShippingRate] = useState(isSupabaseConfigured ? null : SHIPPING_FLAT_RATE);
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    api.getCompanySettings().then(data => setShippingRate(Number(data.shipping_cost ?? SHIPPING_FLAT_RATE))).catch(() => setShippingRate(null));
+  }, []);
 
   useEffect(() => {
     try {
@@ -79,7 +88,7 @@ export function CartProvider({ children }) {
 
   const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  const shippingCost = items.length > 0 ? SHIPPING_FLAT_RATE : 0;
+  const shippingCost = items.length > 0 ? (shippingRate ?? SHIPPING_FLAT_RATE) : 0;
   const total = subtotal + shippingCost;
 
   // Generador de mensaje para WhatsApp según requerimientos

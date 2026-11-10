@@ -6,10 +6,12 @@ from uuid import UUID
 import httpx
 import jwt
 import logging
+import re
 from fastapi import Depends, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.core.config import settings
+from app.core.supabase_headers import service_headers
 from app.core.permissions import ROLE_PERMISSIONS, has_permission
 
 security = HTTPBearer(auto_error=False)
@@ -43,9 +45,8 @@ async def load_profile(user_id: str) -> dict:
         async with httpx.AsyncClient(timeout=10) as client:
             response = await client.get(
                 f"{settings.SUPABASE_URL.rstrip('/')}/rest/v1/profiles",
-                params={"id": f"eq.{user_id}", "select": "id,role,full_name", "limit": "1"},
-                headers={"apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
-                         "Authorization": f"Bearer {settings.SUPABASE_SERVICE_ROLE_KEY}"},
+                params={"id": f"eq.{user_id}", "select": "id,role,full_name,phone", "limit": "1"},
+                headers=service_headers(settings.SUPABASE_SERVICE_ROLE_KEY),
             )
             response.raise_for_status()
             profiles = response.json()
@@ -55,7 +56,9 @@ async def load_profile(user_id: str) -> dict:
         raise HTTPException(status_code=403, detail="Perfil no autorizado")
     profile = profiles[0]
     if (not isinstance(profile, dict) or profile.get("id") != user_id
-            or profile.get("role") not in {"admin", "mensajeria", "cliente"}):
+            or not isinstance(profile.get('role'), str)
+            or not re.fullmatch(r'[a-z][a-z0-9_]{2,39}', profile['role'])
+            or (not settings.RBAC_DATABASE_ENABLED and profile['role'] not in ROLE_PERMISSIONS)):
         raise HTTPException(status_code=403, detail="Perfil no autorizado")
     return profile
 

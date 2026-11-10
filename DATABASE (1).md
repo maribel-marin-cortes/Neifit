@@ -252,7 +252,7 @@ Python FastAPI centraliza reglas transaccionales de inventario, pedidos, cotizac
 
 Actualización del 7 de noviembre de 2026: `supabase/neifit_inicial.sql` reúne esquema, seguridad, Storage y contenido inicial en una instalación transaccional para proyectos nuevos. `supabase/verificar_seguridad.sql` permite comprobar permisos después de ejecutarla. No se ha aplicado a una instancia remota. Las modificaciones posteriores deben entregarse como migraciones incrementales; no ejecutar este instalador sobre tablas preexistentes. Ver `CONEXION_SUPABASE.md`.
 
-Las escrituras comerciales quedan reservadas al backend con `service_role`; RLS permite consulta pública del contenido publicado y consulta de datos propios. Admin y mensajería acceden mediante endpoints que deben comprobar rol y asignación. Los usuarios solo tienen permiso de actualización de nombre y teléfono en su propio perfil, nunca del rol. La creación atómica de pedidos y la integración de los servicios comerciales aún están pendientes.
+Las escrituras comerciales quedan reservadas al backend con `service_role`; RLS permite consulta pública del contenido publicado y consulta de datos propios. Admin y mensajería acceden mediante endpoints que comprueban permisos y asignación. Los usuarios solo tienen permiso de actualización de nombre y teléfono en su propio perfil, nunca del rol. La migración 0005 implementa creación atómica de pedidos/cotizaciones, inventario, idempotencia y seguimiento. Añade `shipping_cost` a la configuración, `request_id` y `request_fingerprint` a documentos, `stock_debited` a pedidos y `product_name` a detalles de cotización. Requiere activación en Supabase según PERSISTENCIA_SUPABASE.md.
 
 
 ## 12. Datos iniciales públicos configurables (para migración posterior)

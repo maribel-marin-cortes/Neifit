@@ -1,5 +1,25 @@
 # TAREAS.md
 
+- [x] Presentar seis documentos sintéticos autorizados con nombres/direcciones habituales y sin etiquetas visuales; agregar dos escenarios de pago aprobado para consultas, identificados en metadatos privados como simulados y sin fondos reales. No modificar perfiles, existencias ni documentos ajenos al manifiesto.
+
+- [x] Sustituir el texto público de datos ficticios en las 13 descripciones por textos breves sin beneficios ni ingredientes no confirmados. Conservar precios, stock e identificación interna de la demostración.
+
+- [x] Retirar [PRUEBA] de los nombres de los 13 productos en Supabase por solicitud del usuario, conservando precios, stock, descripciones e historial; actualizar carga repetible y manifiesto.
+
+- [x] Cargar en Supabase, con autorización explícita para inventar datos, 13 productos [PRUEBA], 3 cotizaciones y 3 pedidos pendientes de pago. Verificar consultas y carga repetible sin duplicar ni reponer stock. No se crean cuentas, no se cambian roles y no se envían mensajes.
+
+## Persistencia comercial con Supabase — implementación actual
+
+- [x] Conectar categorías, productos y contenido institucional a Supabase sin fallback demo cuando hay configuración real.
+- [x] Guardar cotizaciones, pedidos y detalles mediante RPC transaccional con precios de servidor y propietario del JWT.
+- [x] Descontar stock con bloqueos, evitar duplicados por request_id y devolver existencias una sola vez al cancelar; proteger ediciones de inventario obsoletas.
+- [x] Consultar seguimiento persistente, asignar mensajeros y validar cambios de estado/permisos en SQL y FastAPI.
+- [x] Completar editor de productos/categorías y acciones administrativas de cotizaciones/mensajeros; pagos siempre pendientes y Wompi no habilitado.
+- [x] Preparar activación incremental y actualizar instalador de base nueva, diagnóstico seguro y guía PERSISTENCIA_SUPABASE.md.
+- [x] Verificar SQL en PostgreSQL real local con concurrencia, rollback, autorización e idempotencia; verificar suites backend/frontend y compilación.
+- [x] Confirmar activación SQL en Supabase remoto: 16 permisos, 3 roles, RPC de pedidos y tarifa de domicilio; habilitar RBAC_DATABASE_ENABLED y reiniciar backend. Lecturas públicas y bloqueo de pedidos anónimos verificados.
+- [ ] Registrar productos reales y completar una prueba de negocio remota con pedido, cotización y seguimiento autenticados; no se insertan precios ni existencias ficticias.
+
 # Plan de trabajo de Neifit
 
 ## Roles con permisos específicos
@@ -234,3 +254,10 @@ Inicialización local posterior: Python 3.12.12 instalado en `.python/`, entorno
 - [ ] Implementar estos datos en la landing y en la configuración de Supabase.
 - [ ] Verificar visualmente dirección, botón WhatsApp, misión, visión y valores en la aplicación.
 - [x] Evitar desmontar el módulo activo al renovar la sesión de la misma cuenta: permisos revalidados en segundo plano; cambio de cuenta y cierre de sesión mantienen bloqueo. Verificado en navegador con respuesta de permisos retenida, 35 pruebas frontend y compilación.
+- [x] Mantener el menú de módulos abierto al cambiar de ruta; estado compartido por la aplicación y cierre mediante su botón. Compilación frontend verificada.
+- [x] Implementar módulo Usuarios con registro administrativo de mensajeros y asignación de roles; roles personalizados, permisos identificados por código en editor y menú, rutas por permiso y migración 0004. Verificado con pruebas y compilación; pendiente aplicar SQL y activar RBAC en Supabase del usuario.
+- [x] Corregir 404 al rastrear pedidos nuevos: endpoints de pedidos y seguimiento comparten servicio; prueba de creación, rastreo, actualización y aislamiento entre clientes. Los pedidos siguen en memoria y no sobreviven a reinicios.
+- [x] Actualizar listas administrativas al recuperar foco, cada 30 segundos con la pestaña visible y mediante botón Actualizar datos. Verificar que pedidos/cotizaciones de clientes aparecen al administrador sin exponerlos a otros clientes. Persistencia comercial en Supabase continúa pendiente.
+- [x] Preparar presentación del proyecto para el 10 de noviembre de 2026: 14 diapositivas animadas sin conexión, PowerPoint editable con notas, PDF de respaldo, consultas SQL y guion de exposición. Contenido distingue prototipo y pendientes de producción.
+- [x] Ampliar presentación con cinco consultas PostgreSQL explicadas: inventario bajo, cotizaciones pendientes, entregas por mensajero, productos vendidos y usuarios/roles. Versiones HTML, PPTX, PDF y ZIP con 18 diapositivas.
+- [x] Preparar instalador SQL completo para un proyecto Supabase nuevo: esquema y migraciones 0002–0004 en transacción, detección de tablas existentes, verificación de 19 tablas/RLS y guía de replicación en ZIP sin credenciales ni datos privados. Sintaxis SQL/PLpgSQL validada; ejecución en proyecto nuevo pendiente del compañero.

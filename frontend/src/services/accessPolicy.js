@@ -9,6 +9,7 @@ export function safeReturnTo(value) {
 
 export function loginDestination(destination, role) {
   const next = safeReturnTo(destination);
+  if (!['admin', 'cliente', 'mensajeria'].includes(role)) return '/';
   if (role === 'mensajeria') return '/mensajeria';
   if (next.startsWith('/admin') && role !== 'admin') return '/catalogo';
   if (next.startsWith('/mensajeria') && role !== 'admin') return '/catalogo';

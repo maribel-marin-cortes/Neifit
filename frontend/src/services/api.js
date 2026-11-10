@@ -78,7 +78,8 @@ async function request(endpoint, options = {}) {
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      const error = new Error(errorData.detail || `Error ${res.status}: ${res.statusText}`);
+      const detail = Array.isArray(errorData.detail) ? errorData.detail.map(item => item.msg).join('. ') : errorData.detail;
+      const error = new Error(detail || `Error ${res.status}: ${res.statusText}`);
       error.status = res.status;
       error.code = res.headers?.get?.('X-Auth-Error') || errorData.code;
       throw error;
@@ -92,6 +93,20 @@ async function request(endpoint, options = {}) {
 }
 
 export const api = {
+  getNotifications() { return request('/notifications'); },
+  readNotification(id) { return request(`/notifications/${id}/read`, { method: 'PATCH' }); },
+  respondQuote(id, data) { return request(`/quotes/${id}/response`, { method: 'POST', body: JSON.stringify(data) }); },
+  confirmCash(id, data) { return request(`/orders/${id}/cash-receipt`, { method: 'POST', body: JSON.stringify(data) }); },
+  getAccount() { return request('/account'); },
+  updateAccount(data) { return request('/account', { method: 'PATCH', body: JSON.stringify(data) }); },
+  saveAddress(data, id) { return request('/account/addresses' + (id ? '/' + id : ''), { method: id ? 'PUT' : 'POST', body: JSON.stringify(data) }); },
+  deleteAddress(id) { return request('/account/addresses/' + id, { method: 'DELETE' }); },
+  createCategory(data) { return request('/categories/', { method: 'POST', body: JSON.stringify(data) }); },
+  getDeliveryUsers() { return request('/orders/delivery-users'); },
+  assignDelivery(orderId, userId) { return request(`/orders/${orderId}/delivery`, { method: 'PATCH', body: JSON.stringify({ user_id: userId || null }) }); },
+  updateQuoteStatus(quoteId, status) { return request(`/quotes/${quoteId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }); },
+  createRole(data) { return request('/access/roles', { method: 'POST', body: JSON.stringify(data) }); },
+  createUser(data) { return request('/access/users', { method: 'POST', body: JSON.stringify(data) }); },
   getCurrentUser() { return request('/auth/me'); },
   getAccessConfiguration() { return request('/access/'); },
   updateRolePermissions(role, permissions) {
@@ -206,6 +221,9 @@ export const api = {
       const searchParams = new URLSearchParams();
       if (params.category) searchParams.set('category', params.category);
       if (params.search) searchParams.set('search', params.search);
+      for (const key of ['featured', 'available', 'include_inactive']) {
+        if (typeof params[key] === 'boolean') searchParams.set(key, String(params[key]));
+      }
       const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
       return await request(`/products${query}`);
     } catch (error) {
@@ -224,7 +242,7 @@ export const api = {
 
   async getProductBySlug(slug) {
     try {
-      return await request(`/products/${slug}`);
+      return await request(`/products/${encodeURIComponent(slug)}`);
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       const list = getStored('products', initialProducts);
@@ -299,7 +317,7 @@ export const api = {
         order_number: orderNumber,
         ...orderPayload,
         order_status: 'recibido',
-        payment_status: orderPayload.payment_method === 'contraentrega' ? 'pendiente' : 'aprobado',
+        payment_status: 'pendiente',
         created_at: new Date().toISOString(),
         tracking_history: [
           { status: 'recibido', message: 'Pedido recibido en Neifit y en validación.', timestamp: new Date().toISOString() }
@@ -339,7 +357,7 @@ export const api = {
 
   async getOrderByTrackingCode(code) {
     try {
-      return await request(`/tracking/${code}`);
+      return await request(`/tracking/${encodeURIComponent(code.trim())}`);
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       const orders = getStored('orders', initialOrders);

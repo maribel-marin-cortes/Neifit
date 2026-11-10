@@ -29,6 +29,7 @@
     "orders.manage",
     "quotes.manage",
     "content.manage",
-    "access.manage"
+    "access.manage",
+    "users.manage"
   ]
 }

@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import AppRouter from './router/AppRouter';
+import { ModulesMenuProvider } from './components/SiteLayout';
 import './index.css';
 
 export default function App() {
@@ -10,7 +11,9 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
-          <AppRouter />
+          <ModulesMenuProvider>
+            <AppRouter />
+          </ModulesMenuProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

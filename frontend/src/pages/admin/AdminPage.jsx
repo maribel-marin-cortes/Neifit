@@ -1,9 +1,12 @@
 import CatalogImage from '../../components/CatalogImage';
 import AccessManagement from './AccessManagement';
+import SiteContentEditor from './SiteContentEditor';
+import { CashReceipt, QuoteOffer } from '../../components/OperationsForms';
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
+import { requiredRoutePermission } from '../../services/routePermissions';
 import { formatCOP } from '../../components/ProductCard';
 import {
   Package, Users, ShoppingBag, FileText, Settings,
@@ -11,6 +14,7 @@ import {
 } from 'lucide-react';
 
 const TABS = [
+  { key: 'contenido', label: 'Contenido institucional', icon: Settings },
   { key: 'accesos', label: 'Roles y permisos', icon: Users },
   { key: 'dashboard', label: 'Dashboard', icon: BarChart2 },
   { key: 'productos', label: 'Productos', icon: Package },
@@ -21,41 +25,70 @@ const TABS = [
 const STATUS_OPTIONS = ['recibido','confirmado','en_preparacion','empacado','despachado','en_ruta','entregado','novedad','cancelado'];
 
 export default function AdminPage() {
-  const { isAdmin, user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const [searchParams] = useSearchParams();
   const requestedTab = searchParams.get('modulo') || 'dashboard';
   const tab = TABS.some(item => item.key === requestedTab) ? requestedTab : 'dashboard';
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [quotes, setQuotes] = useState([]);
+  const [deliveryUsers, setDeliveryUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [reloadVersion, setReloadVersion] = useState(0);
+  const canAccess = hasPermission(requiredRoutePermission('/admin', '?modulo=' + tab));
 
   useEffect(() => {
-    if (!isAdmin) return;
-    setLoading(true);
-    Promise.all([
-      api.getProducts(),
-      api.getOrders(),
-      api.getQuotes()
-    ]).then(([prods, ords, quots]) => {
-      setProducts(prods);
-      setOrders(ords);
-      setQuotes(quots);
-    }).finally(() => setLoading(false));
-  }, [isAdmin]);
+    if (!canAccess) return;
+    let active = true;
+    let inFlight = false;
+    async function loadData(initial = false) {
+      if (inFlight || !active) return;
+      inFlight = true;
+      if (initial) setLoading(true);
+      setLoadError('');
+      try {
+        const [prods, ords, quots, couriers] = await Promise.all([
+      ['dashboard', 'productos'].includes(tab) && hasPermission('products.manage') ? api.getProducts({ include_inactive: true }) : Promise.resolve([]),
+      ['dashboard', 'pedidos'].includes(tab) && hasPermission('orders.manage') ? api.getOrders() : Promise.resolve([]),
+      tab === 'cotizaciones' && hasPermission('quotes.manage') ? api.getQuotes() : Promise.resolve([]),
+      tab === 'pedidos' && hasPermission('orders.manage') ? api.getDeliveryUsers() : Promise.resolve([])
+        ]);
+        if (active) {
+          setProducts(prods);
+          setOrders(ords);
+          setQuotes(quots);
+          setDeliveryUsers(couriers);
+        }
+      } catch (err) { if (active) setLoadError(err.message); }
+      finally { inFlight = false; if (active) setLoading(false); }
+    }
+    loadData(true);
+    if (tab === 'accesos') return () => { active = false; };
+    const refresh = () => { if (document.visibilityState === 'visible') loadData(); };
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    const timer = window.setInterval(refresh, 30000);
+    return () => {
+      active = false;
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+      window.clearInterval(timer);
+    };
+  }, [canAccess, tab, user?.id, user?.permissions?.join(','), reloadVersion]);
 
-  if (!isAdmin) {
+  if (!canAccess) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center py-20">
         <AlertTriangle className="w-12 h-12 text-red-400" />
         <h2 className="font-display font-bold text-2xl text-[#4B2E1F]">Acceso restringido</h2>
-        <p className="text-[#7A4E2D]/70">Solo los administradores pueden acceder a este panel.</p>
+        <p className="text-[#7A4E2D]/70">Tu cuenta no tiene el permiso requerido para este módulo.</p>
         <Link to="/" className="btn-primary">Ir al inicio</Link>
       </div>
     );
   }
 
-  const totalRevenue = orders.filter(o => o.payment_status === 'aprobado').reduce((a, o) => a + (o.total || 0), 0);
+  const totalRevenue = orders.filter(o => o.payment_status === 'aprobado' && !o.is_simulated).reduce((a, o) => a + (o.total || 0), 0);
   const pendingOrders = orders.filter(o => !['entregado','cancelado'].includes(o.order_status)).length;
   const availableProducts = products.filter(p => p.is_available).length;
 
@@ -82,6 +115,12 @@ export default function AdminPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {loadError && <p role="alert" className="text-red-700 mb-4">{loadError}</p>}
+        <p className="text-xs mb-4">Permiso del módulo: <code>{requiredRoutePermission('/admin', '?modulo=' + tab)}</code></p>
+        {tab !== 'accesos' && <div className="flex flex-wrap items-center gap-3 mb-5">
+          <button type="button" className="btn-primary text-sm" disabled={loading} onClick={() => setReloadVersion(value => value + 1)}>Actualizar datos</button>
+          <p className="text-sm">Se actualiza al volver a la pestaña y cada 30 segundos.</p>
+        </div>}
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-[#7A4E2D]" />
@@ -89,6 +128,7 @@ export default function AdminPage() {
         ) : (
           <>
             {tab === 'accesos' && <AccessManagement />}
+            {tab === 'contenido' && <SiteContentEditor />}
             {/* DASHBOARD */}
             {tab === 'dashboard' && (
               <div className="space-y-6">
@@ -194,9 +234,11 @@ export default function AdminPage() {
                                 </Link>
                                 <button
                                   onClick={async () => {
-                                    if (confirm(`¿Eliminar "${p.name}"?`)) {
-                                      await api.deleteProduct(p.id);
-                                      setProducts(prev => prev.filter(x => x.id !== p.id));
+                                    if (confirm(`¿Desactivar "${p.name}"? Se conservará en los pedidos históricos.`)) {
+                                      try {
+                                        await api.deleteProduct(p.id);
+                                        setProducts(prev => prev.map(x => x.id === p.id ? { ...x, is_active: false, is_available: false } : x));
+                                      } catch (err) { setLoadError(err.message); }
                                     }
                                   }}
                                   className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors"
@@ -219,6 +261,7 @@ export default function AdminPage() {
               <div>
                 <h2 className="font-display font-bold text-xl text-[#4B2E1F] mb-5">Todos los pedidos</h2>
                 <div className="space-y-4">
+                  {orders.length === 0 && <p>No hay pedidos registrados.</p>}
                   {orders.map(o => (
                     <div key={o.id} className="card-cream p-5">
                       <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
@@ -245,6 +288,13 @@ export default function AdminPage() {
                         <span>📅 {new Date(o.created_at).toLocaleDateString('es-CO')}</span>
                         {o.assigned_delivery_name && <span>🚛 {o.assigned_delivery_name}</span>}
                       </div>
+                      <label className="block text-sm mt-4">Mensajero asignado
+                        <select value={o.assigned_delivery_user_id || ''} disabled={['entregado','cancelado'].includes(o.order_status)} className="block border rounded-lg px-3 py-2 mt-1 bg-[#FFF8F2]" onChange={async e => {
+                          try { const updated = await api.assignDelivery(o.id, e.target.value); setOrders(current => current.map(row => row.id === updated.id ? updated : row)); }
+                          catch (err) { setLoadError(err.message); }
+                        }}><option value="">Sin asignar</option>{deliveryUsers.map(person => <option key={person.id} value={person.id}>{person.full_name || person.id}</option>)}</select>
+                      </label>
+                      {user?.role === 'admin' && <CashReceipt order={o} onSaved={updated => setOrders(rows => rows.map(row => row.id === updated.id ? updated : row))} />}
                     </div>
                   ))}
                 </div>
@@ -269,11 +319,15 @@ export default function AdminPage() {
                           <p className="font-semibold text-[#4B2E1F]">{q.customer_name}</p>
                           <p className="text-sm text-[#7A4E2D]/60">{q.customer_phone} · {q.customer_email}</p>
                         </div>
-                        <span className={`badge-${q.status === 'pendiente' ? 'pink' : 'green'}`}>
-                          {q.status}
-                        </span>
+                        <label className="text-sm">Estado
+                          <select aria-label={`Estado de ${q.quote_number}`} value={q.status} className="block border rounded-lg px-2 py-1 bg-[#FFF8F2]" onChange={async e => {
+                            try { const updated = await api.updateQuoteStatus(q.id, e.target.value); setQuotes(current => current.map(row => row.id === updated.id ? updated : row)); }
+                            catch (err) { setLoadError(err.message); }
+                          }}>{['pendiente','respondida','aceptada','rechazada','cancelada'].map(status => <option key={status} value={status}>{status}</option>)}</select>
+                        </label>
                       </div>
                       {q.notes && <p className="text-sm text-[#7A4E2D]/70 mb-3 italic">"{q.notes}"</p>}
+                      <QuoteOffer quote={q} onSaved={updated => setQuotes(rows => rows.map(row => row.id === updated.id ? updated : row))} />
                       {q.items?.length > 0 && (
                         <ul className="text-xs text-[#7A4E2D]/70 space-y-0.5">
                           {q.items.map((it, i) => (

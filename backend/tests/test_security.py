@@ -1,3 +1,4 @@
+from unittest.mock import patch
 import unittest
 from unittest.mock import AsyncMock, patch, Mock
 
@@ -10,6 +11,7 @@ from app.core import security
 from app.core.config import Settings
 
 
+@patch.multiple('app.core.supabase_rest.settings', SUPABASE_URL='', SUPABASE_SERVICE_ROLE_KEY='')
 class SecurityTests(unittest.TestCase):
     def setUp(self):
         self.config = Settings(_env_file=None, SUPABASE_URL="", SUPABASE_JWKS_URL="",
@@ -109,7 +111,9 @@ class SecurityTests(unittest.TestCase):
                 self.assertNotIn('secret', response.text)
 
 
+@patch.multiple('app.core.supabase_rest.settings', SUPABASE_URL='', SUPABASE_SERVICE_ROLE_KEY='')
 class ProfileTests(unittest.IsolatedAsyncioTestCase):
+    @patch.object(security.settings, 'RBAC_DATABASE_ENABLED', False)
     async def test_missing_invalid_and_unavailable_profiles(self):
         for data in ([], [{'id': 'other', 'role': 'admin'}], [{'id': 'user', 'role': 'owner'}]):
             response = Mock()

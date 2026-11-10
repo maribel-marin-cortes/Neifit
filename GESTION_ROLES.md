@@ -1,8 +1,59 @@
 # Roles y permisos de Neifit
 
+## Usuarios y roles personalizados
+
+El administrador tiene un módulo **Usuarios** (`/usuarios`, permiso `users.manage`) para registrar nombre, correo, teléfono, contraseña inicial y rol. El rol inicial del formulario es Mensajero / domiciliario. También permite asignar un rol distinto a una cuenta existente. El registro público continúa creando exclusivamente clientes.
+
+En **Roles y permisos** (`/admin?modulo=accesos`, permiso `access.manage`) puede crear roles con nombre, código y permisos, y modificar sus permisos posteriormente. Los códigos aparecen bajo el nombre de cada permiso y de cada enlace del menú. Los roles personalizados acceden a las vistas según sus permisos; no necesitan llamarse admin o mensajeria. El permiso `profile.read` es obligatorio. Los permisos `users.manage` y `access.manage` están reservados al administrador; no son delegables.
+
+### Activación de esta ampliación
+
+La comprobación de Supabase en esta implementación devolvió tablas `permissions` y `access_roles` ausentes. No se han aplicado migraciones remotas. La clave de servicio permite gestionar Auth y la Data API, pero no sustituye una conexión PostgreSQL para ejecutar migraciones.
+
+1. Abre el **SQL Editor** de tu proyecto Supabase, con el esquema inicial ya instalado.
+2. Si todavía no instalaste la gestión de roles, ejecuta **supabase/instalar_usuarios_roles.sql** completo una sola vez. Incluye las migraciones 0002, 0003 y 0004 en una sola transacción. No ejecutes además esas migraciones individualmente.
+3. Si ya aplicaste 0003 anteriormente, ejecuta solamente **supabase/migrations/0004_usuarios_roles_personalizados.sql**. No vuelvas a ejecutar el instalador completo.
+4. Ejecuta **supabase/verificar_usuarios_roles.sql**. Debe mostrar las comprobaciones en true y los tres roles iniciales.
+5. En `backend/.env`, establece `RBAC_DATABASE_ENABLED=true`. Conserva los demás valores.
+6. Reinicia el backend con `.\iniciar-backend.ps1` y recarga el navegador.
+7. Ingresa como administrador. En Usuarios registra el mensajero. En Roles y permisos crea los roles adicionales que necesites y después asígnalos desde Usuarios.
+
+No actives la variable antes de terminar el SQL: el backend rechaza consultas si no puede comprobar los permisos.
+
+### Registro administrativo
+
+El administrador debe verificar que el correo pertenece a la persona y marcar la casilla del formulario. Esta alta crea una cuenta con correo confirmado, sin enviar correos automáticos. La contraseña se comunica directamente a su titular y no se guarda en profiles ni se devuelve en la respuesta. Para cambiarla puede utilizar la recuperación de contraseña ya existente. No se inicia sesión como el mensajero ni se reemplaza la sesión del administrador.
+
+El servidor crea inicialmente la identidad bloqueada, asigna el rol mediante la función auditada y habilita el acceso al terminar. Si falla la asignación o activación, intenta eliminar exclusivamente la identidad que acaba de crear. Si no puede completar esa limpieza, muestra un error para revisar Authentication → Users antes de reintentar. La creación en Auth y el cambio de rol en PostgreSQL son operaciones separadas; ante un corte de red puede requerirse esa revisión.
+
+### Permisos por vista
+
+| Vista | Permiso |
+|---|---|
+| Catálogo y detalle | `catalog.read` |
+| Carrito y compra | `orders.create` |
+| Mis pedidos y seguimiento propio | `orders.read_own` |
+| Cotizador | `quotes.create` |
+| Perfil | `profile.read` |
+| Mensajería: pedidos asignados | `delivery.read_assigned` |
+| Despachar/iniciar recorrido | `delivery.start` |
+| Confirmar entrega | `delivery.complete` |
+| Registrar novedad | `delivery.issue` |
+| Productos e inventario | `products.manage` |
+| Resumen y gestión de pedidos | `orders.manage` |
+| Gestión de cotizaciones | `quotes.manage` |
+| Usuarios | `users.manage` (administrador) |
+| Roles y permisos | `access.manage` (administrador) |
+
+`quotes.read_own` autoriza la consulta API de cotizaciones propias; `content.manage` autoriza las operaciones existentes de contenido en la API. No se crean pantallas adicionales para esos dos permisos en esta ampliación. Las vistas públicas institucionales no requieren permiso.
+
+La asignación de permisos regula también las operaciones; no solo oculta enlaces. Mensajería conserva el acceso únicamente a pedidos asignados. Un rol que combine compras y entregas solo ve importes completos en sus propios pedidos o cuando tenga `orders.manage`.
+
+Verificación de esta ampliación: 38 pruebas backend y 35 frontend, compilación y análisis SQL/PLpgSQL. Las pruebas de altas usan servicios simulados: no registran personas ni envían correos reales. La migración y un alta real siguen pendientes de ejecutarse en tu instancia.
+
 ## Modelo implementado
 
-Se mantienen los roles `cliente`, `mensajeria` (mensajero/domiciliario) y `admin`. Los permisos se asignan al rol, no individualmente a una persona. Cada cuenta tiene un rol en `profiles`; ese rol se consulta en servidor, nunca desde metadatos editables por el usuario.
+Se mantienen como roles base `cliente`, `mensajeria` (mensajero/domiciliario) y `admin`, y se admiten roles personalizados tras aplicar 0004. Los permisos se asignan al rol, no individualmente a una persona. Cada cuenta tiene un rol en `profiles`; ese rol se consulta en servidor, nunca desde metadatos editables por el usuario.
 
 | Rol | Permisos base |
 |---|---|
@@ -80,4 +131,4 @@ Cada cambio persistente de rol/permisos registra actor, fecha, objetivo y detall
 
 Se comprobaron 32 pruebas frontend, 23 backend, compilación y navegador con sesiones/respuestas simuladas: acceso al editor, guardado de permisos, asignación de rol, bloqueo del rol propio, bloqueo de rutas administrativas y ocultación de la acción de entrega revocada. Se verifican además permisos retirados, aislamiento de pedidos, proyección logística y transiciones prohibidas.
 
-La gestión de roles/permisos usa persistencia real mediante RPC cuando está activada. Los servicios comerciales de pedidos y cotizaciones continúan en memoria de demostración: este cambio añade autorización y propiedad, no implementa sus repositorios transaccionales reales ni pagos. Las políticas y RPC SQL requieren su verificación en Supabase después de la instalación.
+La gestión de roles/permisos usa persistencia real mediante RPC cuando está activada. La ampliación comercial actual también implementa pedidos, cotizaciones e inventario persistentes mediante la migración 0005. Sigue **PERSISTENCIA_SUPABASE.md**; el archivo `supabase/activar_servicios_supabase.sql` reúne la actualización sobre una base existente. La aplicación de SQL y la verificación en el proyecto remoto siguen siendo necesarias. Los pagos reales requieren integrar y verificar el proveedor.

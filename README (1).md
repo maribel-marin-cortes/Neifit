@@ -1,5 +1,7 @@
 # Neifit
 
+La persistencia comercial está implementada mediante Supabase REST y funciones SQL transaccionales. Para una base existente ejecuta `supabase/activar_servicios_supabase.sql`; para una nueva utiliza `supabase/neifit_completo_base_nueva.sql`, que ya incluye 0005. Sigue **PERSISTENCIA_SUPABASE.md** para activar la configuración, cargar productos reales y verificar pedidos, cotizaciones y stock. El carrito sigue local; no se simulan pagos aprobados ni se integra una pasarela sin validación del proveedor.
+
 Tienda virtual de productos saludables inspirados en sabores tradicionales y naturales de Colombia.
 
 ## 1. Descripción general

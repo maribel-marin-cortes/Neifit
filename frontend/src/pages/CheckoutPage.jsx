@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -8,8 +8,6 @@ import { CheckCircle, Loader2 } from 'lucide-react';
 
 const PAYMENT_METHODS = [
   { value: 'contraentrega', label: 'Pago contra entrega (efectivo)' },
-  { value: 'transferencia', label: 'Transferencia bancaria / PSE' },
-  { value: 'wompi', label: 'Wompi / Tarjeta (próximamente)' },
 ];
 
 export default function CheckoutPage() {
@@ -27,6 +25,15 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [requestId] = useState(() => crypto.randomUUID());
+  const [addresses, setAddresses] = useState([]);
+  const [addressError, setAddressError] = useState('');
+  useEffect(() => {
+    let active = true;
+    api.getAccount().then(data => { if (active) setAddresses(data.addresses); })
+      .catch(() => { if (active) setAddressError('No se pudieron cargar tus direcciones guardadas. Puedes escribir la dirección de entrega.'); });
+    return () => { active = false; };
+  }, [user?.id]);
 
   const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -37,6 +44,7 @@ export default function CheckoutPage() {
     setError(null);
     try {
       const orderPayload = {
+        request_id: requestId,
         user_id: user?.id || 'guest',
         customer_name: form.full_name,
         customer_phone: form.phone,
@@ -76,6 +84,7 @@ export default function CheckoutPage() {
           <p className="text-sm text-[#7A4E2D]/70 mb-8">
             Total a pagar: <strong>{formatCOP(success.total)}</strong><br />
             Forma de pago: <strong className="capitalize">{success.payment_method}</strong><br />
+            Estado del pago: <strong>Pendiente de confirmación</strong><br />
             Guarda tu número de pedido para rastrear tu entrega.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -134,6 +143,13 @@ export default function CheckoutPage() {
                   </div>
                 ))}
                 <div>
+                  {addressError && <p role="status" className="text-sm mb-2">{addressError}</p>}
+                  {addresses.length > 0 && <label className="block mb-4">Usar una dirección guardada
+                    <select className="input-field w-full" defaultValue="" onChange={e => {
+                      const saved = addresses.find(item => item.id === e.target.value);
+                      if (saved) setForm(prev => ({ ...prev, full_name: saved.recipient, phone: saved.phone, address: saved.address + ', ' + saved.city, notes: saved.notes || '' }));
+                    }}><option value="">Escribir dirección manualmente</option>{addresses.map(item => <option key={item.id} value={item.id}>{item.label}: {item.address}, {item.city}</option>)}</select>
+                  </label>}
                   <label className="block text-sm font-medium text-[#4B2E1F] mb-1.5">
                     Dirección de entrega en Medellín <span className="text-red-500">*</span>
                   </label>
@@ -198,11 +214,11 @@ export default function CheckoutPage() {
                 </div>
               ))}
               <div className="border-t border-[#7A4E2D]/15 pt-2 flex justify-between text-[#7A4E2D]/70">
-                <span>Domicilio</span>
+                <span>Domicilio estimado</span>
                 <span>{formatCOP(shippingCost)}</span>
               </div>
               <div className="border-t border-[#7A4E2D]/15 pt-2 flex justify-between font-display font-bold text-lg text-[#4B2E1F]">
-                <span>Total</span>
+                <span>Total estimado</span>
                 <span>{formatCOP(total)}</span>
               </div>
             </div>

@@ -3,6 +3,25 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
+test('el catálogo envía filtros booleanos y la consulta administrativa incluye inactivos', async () => {
+  const { api, requests } = await loadApi(true, async () => ({ ok: true, json: async () => [] }));
+  await api.getProducts({ available: true, include_inactive: true, featured: false });
+  const url = new URL(requests[0][0]);
+  assert.equal(url.searchParams.get('available'), 'true');
+  assert.equal(url.searchParams.get('include_inactive'), 'true');
+  assert.equal(url.searchParams.get('featured'), 'false');
+});
+
+test('las acciones administrativas usan la API y conservan la sesión del administrador', async () => {
+  const { api, requests } = await loadApi(true, async () => ({ ok: true, json: async () => ({ id: 'saved' }) }));
+  await api.assignDelivery('order-test', 'courier-test');
+  await api.updateQuoteStatus('quote-test', 'respondida');
+  assert.equal(requests[0][1].method, 'PATCH');
+  assert.equal(JSON.parse(requests[0][1].body).user_id, 'courier-test');
+  assert.equal(requests[1][1].headers.Authorization, 'Bearer supabase-jwt');
+  assert.equal(JSON.parse(requests[1][1].body).status, 'respondida');
+});
+
 async function loadApi(configured, fetchImpl, session = { access_token: 'supabase-jwt' }, refresh = async () => ({ data: { session: { access_token: 'renewed-jwt' } }, error: null })) {
   const storage = new Map([['neifit_token', 'old-demo-token']]);
   const requests = [];

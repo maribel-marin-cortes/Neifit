@@ -12,14 +12,16 @@ export default function MensajeriaPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [error, setError] = useState('');
 
-  const canAccess = isMensajeria || isAdmin;
+  const canAccess = hasPermission('delivery.read_assigned');
 
   useEffect(() => {
     if (!canAccess) return;
-    const filter = isMensajeria ? { delivery_user_id: user?.id } : {};
+    const filter = !hasPermission('orders.manage') ? { delivery_user_id: user?.id } : {};
     api.getOrders(filter)
       .then(all => setOrders(all.filter(o => !['entregado','cancelado'].includes(o.order_status))))
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, [canAccess]);
 
@@ -67,6 +69,7 @@ export default function MensajeriaPage() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-8">
+        {error && <p role="alert" className="text-red-700 mb-4">{error}</p>}
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-display font-bold text-xl text-[#4B2E1F]">
             Pedidos activos asignados
@@ -95,10 +98,10 @@ export default function MensajeriaPage() {
                     <p className="font-mono font-bold text-[#7A4E2D] text-lg">{order.order_number}</p>
                     <p className="font-bold text-[#4B2E1F]">{order.customer_name}</p>
                   </div>
-                  <div className="text-right">
+                  {hasPermission('orders.manage') && <div className="text-right">
                     <p className="font-bold text-[#4B2E1F]">{formatCOP(order.total)}</p>
                     <p className="text-xs text-[#7A4E2D]/60 capitalize">{order.payment_method}</p>
-                  </div>
+                  </div>}
                 </div>
 
                 {/* Address */}

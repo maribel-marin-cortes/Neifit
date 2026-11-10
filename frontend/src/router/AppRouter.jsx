@@ -14,7 +14,11 @@ import GoogleCallbackPage from '../pages/GoogleCallbackPage';
 import SeguimientoPage from '../pages/SeguimientoPage';
 import CotizadorPage from '../pages/CotizadorPage';
 import MisPedidosPage from '../pages/MisPedidosPage';
+import MiCuentaPage from '../pages/MiCuentaPage';
+import MisCotizacionesPage from '../pages/MisCotizacionesPage';
 import AdminPage from '../pages/admin/AdminPage';
+import AccessManagement from '../pages/admin/AccessManagement';
+import ProductEditor from '../pages/admin/ProductEditor';
 import MensajeriaPage from '../pages/mensajeria/MensajeriaPage';
 import { useAuth } from '../context/AuthContext';
 
@@ -32,7 +36,7 @@ function ProtectedRoute({ children, requiredRoles }) {
 function LayoutWithNavFooter({ children }) {
   const { pathname } = useLocation();
   if (['/', '/politica-privacidad', '/terminos'].includes(pathname)) return <SiteLayout>{children}</SiteLayout>;
-  return <ProtectedRoute requiredRoles={pathname === '/mi-cuenta' ? ['admin', 'cliente', 'mensajeria'] : ['admin', 'cliente']}><SiteLayout>{children}</SiteLayout></ProtectedRoute>;
+  return <ProtectedRoute><SiteLayout>{children}</SiteLayout></ProtectedRoute>;
 }
 
 function LayoutMinimal({ children }) {
@@ -59,46 +63,47 @@ export default function AppRouter() {
       <Route path="/restablecer-contrasena" element={<LayoutMinimal><PasswordRecoveryPage reset /></LayoutMinimal>} />
 
       {/* Authenticated routes */}
+      <Route path="/mis-cotizaciones" element={<LayoutWithNavFooter><MisCotizacionesPage /></LayoutWithNavFooter>} />
+      <Route path="/usuarios" element={<ProtectedRoute requiredRoles={['admin']}><SiteLayout><div className="max-w-7xl mx-auto p-6"><AccessManagement view="users" /></div></SiteLayout></ProtectedRoute>} />
       <Route path="/checkout" element={
         <LayoutWithNavFooter>
-          <ProtectedRoute requiredRoles={['admin','cliente','mensajeria']}>
+          <ProtectedRoute>
             <CheckoutPage />
           </ProtectedRoute>
         </LayoutWithNavFooter>
       } />
       <Route path="/mis-pedidos" element={
         <LayoutWithNavFooter>
-          <ProtectedRoute requiredRoles={['admin','cliente']}>
+          <ProtectedRoute>
             <MisPedidosPage />
           </ProtectedRoute>
         </LayoutWithNavFooter>
       } />
       <Route path="/mi-cuenta" element={
         <LayoutWithNavFooter>
-          <ProtectedRoute requiredRoles={['admin','cliente','mensajeria']}>
-            <div className="min-h-screen py-10 px-4 max-w-2xl mx-auto">
-              <h1 className="font-display font-bold text-2xl text-[#4B2E1F] mb-4">Mi cuenta</h1>
-              <p className="text-[#7A4E2D]/70">Próximamente: gestión de perfil, dirección y preferencias.</p>
-            </div>
+          <ProtectedRoute>
+            <MiCuentaPage />
           </ProtectedRoute>
         </LayoutWithNavFooter>
       } />
 
       {/* Admin panel */}
+      <Route path="/admin/productos/nuevo" element={<ProtectedRoute><SiteLayout><ProductEditor /></SiteLayout></ProtectedRoute>} />
+      <Route path="/admin/productos/:id/editar" element={<ProtectedRoute><SiteLayout><ProductEditor /></SiteLayout></ProtectedRoute>} />
       <Route path="/admin" element={
-        <ProtectedRoute requiredRoles={['admin']}>
+        <ProtectedRoute>
           <SiteLayout><AdminPage /></SiteLayout>
         </ProtectedRoute>
       } />
       <Route path="/admin/*" element={
-        <ProtectedRoute requiredRoles={['admin']}>
+        <ProtectedRoute>
           <SiteLayout><AdminPage /></SiteLayout>
         </ProtectedRoute>
       } />
 
       {/* Mensajería panel */}
       <Route path="/mensajeria" element={
-        <ProtectedRoute requiredRoles={['admin','mensajeria']}>
+        <ProtectedRoute>
           <SiteLayout><MensajeriaPage /></SiteLayout>
         </ProtectedRoute>
       } />

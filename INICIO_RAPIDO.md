@@ -77,5 +77,5 @@ La API valida firma RS256/ES256, emisor, audiencia, caducidad e identificador de
 
 Desde `backend/`, ejecutar `python -m unittest discover -s tests -v`. Las pruebas usan servicios simulados y no requieren credenciales reales.
 
-Los módulos comerciales todavía usan memoria y el frontend contiene respuestas de respaldo en almacenamiento local. No representan persistencia ni pagos reales y pueden ocultar errores de la API. La conexión completa a Supabase, las migraciones RLS, los pedidos transaccionales y la eliminación de esas simulaciones en producción siguen pendientes.
+Con Supabase configurado, los módulos comerciales usan las tablas y RPC reales y no sustituyen errores por datos de demostración. Ejecuta `supabase/activar_servicios_supabase.sql` en una base existente y sigue **PERSISTENCIA_SUPABASE.md**. Sin configuración de Supabase se mantiene el modo de demostración. El carrito sigue local y los pagos nuevos quedan pendientes; no se simula la confirmación de una pasarela.
 

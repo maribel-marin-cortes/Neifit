@@ -3,6 +3,7 @@ from typing import List, Optional
 from app.schemas.product import ProductOut, ProductCreate, ProductUpdate
 from app.core.security import require_admin, require_auth, require_permission
 from app.services.product_service import ProductService
+from app.core.permissions import has_permission
 
 router = APIRouter()
 service = ProductService()
@@ -14,19 +15,21 @@ async def list_products(
     search: Optional[str] = None,
     featured: Optional[bool] = None,
     available: Optional[bool] = None,
-    user=Depends(require_permission('catalog.read')),
+    include_inactive: bool = False,
+    user=Depends(require_permission('catalog.read', 'products.manage', 'quotes.create')),
 ):
     """Catálogo completo para usuarios autenticados."""
     return await service.list_products(
         category=category, search=search,
-        featured=featured, available=available
+        featured=featured, available=available,
+        include_inactive=include_inactive and has_permission(user,'products.manage')
     )
 
 
 @router.get("/{slug}", response_model=ProductOut)
-async def get_product(slug: str, user=Depends(require_permission('catalog.read'))):
+async def get_product(slug: str, user=Depends(require_permission('catalog.read', 'products.manage'))):
     """Detalle de producto por slug o id."""
-    product = await service.get_by_slug(slug)
+    product = await service.get_by_slug(slug, include_inactive=has_permission(user,'products.manage'))
     if not product:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
     return product
@@ -38,7 +41,7 @@ async def create_product(
     admin=Depends(require_permission('products.manage'))
 ):
     """Crear producto. Solo administradores."""
-    return await service.create(data)
+    return await service.create(data, admin)
 
 
 @router.put("/{product_id}", response_model=ProductOut)
@@ -48,7 +51,7 @@ async def update_product(
     admin=Depends(require_permission('products.manage'))
 ):
     """Actualizar producto. Solo administradores."""
-    updated = await service.update(product_id, data)
+    updated = await service.update(product_id, data, admin)
     if not updated:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
     return updated
@@ -60,7 +63,7 @@ async def delete_product(
     admin=Depends(require_permission('products.manage'))
 ):
     """Eliminar producto. Solo administradores."""
-    deleted = await service.delete(product_id)
+    deleted = await service.delete(product_id, admin)
     if not deleted:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
 

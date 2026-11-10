@@ -2,8 +2,12 @@ from fastapi import APIRouter, Depends
 from app.core.security import require_auth
 from app.api.v1.endpoints import products, categories, orders, quotes, tracking, site
 from app.api.v1.endpoints import access
+from app.api.v1.endpoints import account
+from app.api.v1.endpoints import operations
 
 api_router = APIRouter()
+api_router.include_router(operations.router, tags=['Operación'])
+api_router.include_router(account.router, prefix='/account', tags=['Mi cuenta'])
 
 
 @api_router.get('/auth/me', tags=['Autenticación'])

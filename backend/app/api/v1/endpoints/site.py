@@ -4,6 +4,8 @@ from app.schemas.product import ProductPreview
 from app.schemas.category import CategoryOut
 from app.services.product_service import ProductService
 from app.services.category_service import CategoryService
+from app.core.supabase_rest import database_enabled
+from app.services.site_repository import site_repository
 
 router = APIRouter()
 
@@ -54,13 +56,17 @@ _VALUES = [
 @router.get("/settings")
 async def get_settings():
     """Configuración pública del negocio (contacto, horarios)."""
-    return _SETTINGS
+    if database_enabled():
+        return await site_repository.settings()
+    return {**_SETTINGS, 'shipping_cost': 5000}
 
 
 @router.put("/settings")
 async def update_settings(data: dict, admin=Depends(require_permission('content.manage'))):
     """Actualizar configuración. Solo administradores."""
     # En producción esto persiste en Supabase tabla company_settings
+    if database_enabled():
+        return await site_repository.update_settings(data)
     _SETTINGS.update(data)
     return _SETTINGS
 
@@ -68,13 +74,15 @@ async def update_settings(data: dict, admin=Depends(require_permission('content.
 @router.get("/content")
 async def get_content():
     """Contenido institucional publicado (misión, visión, quiénes somos)."""
-    return _CONTENT
+    return await site_repository.content() if database_enabled() else _CONTENT
 
 
 @router.put("/content")
 async def update_content(data: dict, admin=Depends(require_permission('content.manage'))):
     """Actualizar contenido institucional. Solo administradores."""
     # En producción persiste en Supabase tabla site_content
+    if database_enabled():
+        return await site_repository.update_content(data, admin)
     _CONTENT.update(data)
     return _CONTENT
 
@@ -82,13 +90,15 @@ async def update_content(data: dict, admin=Depends(require_permission('content.m
 @router.get("/values")
 async def get_values():
     """Valores corporativos publicados."""
-    return _VALUES
+    return await site_repository.values() if database_enabled() else _VALUES
 
 
 @router.put("/values")
 async def update_values(data: list, admin=Depends(require_permission('content.manage'))):
     """Actualizar valores. Solo administradores."""
     global _VALUES
+    if database_enabled():
+        return await site_repository.update_values(data)
     _VALUES = data
     return _VALUES
 

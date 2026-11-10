@@ -18,10 +18,12 @@ const STATUS_LABELS = {
 export default function MisPedidosPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     api.getOrders()
       .then(setOrders)
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
@@ -33,6 +35,7 @@ export default function MisPedidosPage() {
     );
   }
 
+  if (error) return <div className="max-w-2xl mx-auto p-8"><p role="alert" className="text-red-700">{error}</p><button onClick={() => window.location.reload()} className="btn-primary mt-4">Reintentar</button></div>;
   if (orders.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center py-20">

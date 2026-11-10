@@ -2,6 +2,8 @@ from typing import List, Optional
 import uuid
 from datetime import datetime
 from app.schemas.category import CategoryCreate
+from app.core.supabase_rest import database_enabled
+from app.services.commerce_repository import commerce
 
 
 MOCK_CATEGORIES = [
@@ -16,9 +18,13 @@ class CategoryService:
         self._data = {c["id"]: c for c in MOCK_CATEGORIES}
 
     async def list_active(self) -> List[dict]:
+        if database_enabled():
+            return await commerce.categories()
         return [c for c in self._data.values() if c["is_active"]]
 
     async def create(self, data: CategoryCreate) -> dict:
+        if database_enabled():
+            return await commerce.create_category(data)
         cid = str(uuid.uuid4())
         cat = {**data.model_dump(), "id": cid}
         self._data[cid] = cat

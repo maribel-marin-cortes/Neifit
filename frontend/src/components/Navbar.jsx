@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Menu, X, User, MessageCircle, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import Notifications from './Notifications';
 
 export default function Navbar({ menuOpen = false, onToggleMenu, showModules = true }) {
   const { user, logout, hasPermission } = useAuth();
@@ -27,6 +28,7 @@ export default function Navbar({ menuOpen = false, onToggleMenu, showModules = t
           <p className="hidden sm:block text-xs text-[#7A4E2D] border-l border-[#7A4E2D]/20 pl-4">Postres, snacks y bebidas<br /><span className="font-semibold text-[#4B2E1F]">Sabores de nuestras raíces</span></p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {user && <Notifications key={user.id} />}
           <a href="https://wa.me/573127827020" target="_blank" rel="noopener noreferrer" className="hidden md:inline-flex items-center gap-2 rounded-full bg-[#5F8D4E] text-white text-xs font-semibold px-4 py-2" aria-label="Contactar por WhatsApp a Neifit">
             <MessageCircle className="h-4 w-4" /> WhatsApp
           </a>
