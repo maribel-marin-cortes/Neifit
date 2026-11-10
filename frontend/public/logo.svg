@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 160" width="100%" height="100%">
+  <defs>
+    <!-- Filtros de sombra suave -->
+    <filter id="fruit-shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#4B2E1F" flood-opacity="0.25"/>
+    </filter>
+    <filter id="soft-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- Degradados realistas -->
+    <!-- Chontaduro (naranja rojizo profundo) -->
+    <radialGradient id="chontaduro-grad" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#FF7A33"/>
+      <stop offset="45%" stop-color="#E64A19"/>
+      <stop offset="85%" stop-color="#C23616"/>
+      <stop offset="100%" stop-color="#801C08"/>
+    </radialGradient>
+
+    <!-- Mango (dorado a naranja y rubor rojo) -->
+    <radialGradient id="mango-grad" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FFE066"/>
+      <stop offset="40%" stop-color="#FFB300"/>
+      <stop offset="75%" stop-color="#FB8C00"/>
+      <stop offset="100%" stop-color="#D84315"/>
+    </radialGradient>
+
+    <!-- Fresa (rojo brillante con brillo natural) -->
+    <radialGradient id="fresa-grad" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#FF6B8B"/>
+      <stop offset="35%" stop-color="#E53935"/>
+      <stop offset="80%" stop-color="#B71C1C"/>
+      <stop offset="100%" stop-color="#7F0000"/>
+    </radialGradient>
+
+    <!-- Coco exterior y pulpa -->
+    <linearGradient id="coco-shell" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8D6E63"/>
+      <stop offset="60%" stop-color="#5D4037"/>
+      <stop offset="100%" stop-color="#3E2723"/>
+    </linearGradient>
+    <radialGradient id="coco-meat" cx="45%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="70%" stop-color="#F5F5F5"/>
+      <stop offset="90%" stop-color="#E0E0E0"/>
+      <stop offset="100%" stop-color="#BCAAA4"/>
+    </radialGradient>
+
+    <!-- Hojas verdes (natural y botánico) -->
+    <linearGradient id="leaf-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#81C784"/>
+      <stop offset="50%" stop-color="#4CAF50"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </linearGradient>
+    <linearGradient id="leaf-grad-2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#A5D6A7"/>
+      <stop offset="60%" stop-color="#5F8D4E"/>
+      <stop offset="100%" stop-color="#1B5E20"/>
+    </linearGradient>
+
+    <!-- Color café del texto -->
+    <linearGradient id="coffee-text-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#67391F"/>
+      <stop offset="50%" stop-color="#7A4E2D"/>
+      <stop offset="100%" stop-color="#583119"/>
+    </linearGradient>
+  </defs>
+
+  <!-- RAMILLETE DE FRUTAS (IZQUIERDA) -->
+  <g transform="translate(10, 10)" filter="url(#fruit-shadow)">
+    <!-- Hojas de fondo -->
+    <!-- Hoja superior izquierda -->
+    <path d="M 65 60 C 45 25, 20 20, 15 35 C 10 50, 30 75, 65 60 Z" fill="url(#leaf-grad-1)"/>
+    <path d="M 65 60 Q 38 40 18 35" stroke="#C8E6C9" stroke-width="1.2" fill="none" opacity="0.7"/>
+
+    <!-- Hoja superior central -->
+    <path d="M 80 55 C 80 15, 105 10, 105 30 C 105 50, 95 65, 80 55 Z" fill="url(#leaf-grad-2)"/>
+    <path d="M 80 55 Q 95 35 105 20" stroke="#E8F5E9" stroke-width="1.2" fill="none" opacity="0.7"/>
+
+    <!-- Hoja inferior derecha -->
+    <path d="M 95 90 C 130 95, 145 120, 130 130 C 115 140, 85 115, 95 90 Z" fill="url(#leaf-grad-1)"/>
+
+    <!-- 1. MANGO (Fondo derecho del ramillete) -->
+    <g transform="translate(68, 25)">
+      <!-- Forma orgánica del mango maduro -->
+      <path d="M 25 15 C 45 10, 68 28, 62 55 C 56 80, 32 88, 18 78 C 5 68, 5 35, 25 15 Z" fill="url(#mango-grad)"/>
+      <!-- Brillo sutil de piel de mango -->
+      <path d="M 24 22 C 35 18, 48 28, 44 42" stroke="#FFF9C4" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.45"/>
+    </g>
+
+    <!-- 2. COCO ABIERTO (Mitad de coco mostrando pulpa blanca y centro) -->
+    <g transform="translate(18, 52)">
+      <!-- Cáscara rugosa café -->
+      <circle cx="34" cy="34" r="32" fill="url(#coco-shell)"/>
+      <!-- Textura de fibras exteriores -->
+      <circle cx="34" cy="34" r="32" stroke="#4E342E" stroke-width="2" stroke-dasharray="3,4" fill="none" opacity="0.6"/>
+      <!-- Pulpa blanca gruesa -->
+      <circle cx="34" cy="34" r="26" fill="url(#coco-meat)"/>
+      <!-- Hueco o centro de agua de coco -->
+      <ellipse cx="34" cy="34" rx="17" ry="17" fill="#EFEBE9"/>
+      <ellipse cx="34" cy="34" rx="14" ry="14" fill="#D7CCC8" opacity="0.5"/>
+      <ellipse cx="31" cy="30" rx="6" ry="3" fill="#FFFFFF" opacity="0.7"/>
+    </g>
+
+    <!-- 3. CHONTADURO (Fruto tropical colombiano) -->
+    <g transform="translate(72, 70)">
+      <!-- Silueta cónica-ovalada típica del chontaduro -->
+      <path d="M 22 5 C 38 7, 45 24, 40 38 C 35 50, 16 52, 7 40 C -1 28, 6 8, 22 5 Z" fill="url(#chontaduro-grad)"/>
+      <!-- Corona o pedúnculo verde oscuro -->
+      <path d="M 20 6 L 24 0 L 26 6 Z" fill="#2E7D32"/>
+      <ellipse cx="23" cy="6" rx="4" ry="2" fill="#33691E"/>
+      <!-- Brillo natural -->
+      <path d="M 18 14 C 25 14, 30 20, 28 28" stroke="#FFE0B2" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.55"/>
+    </g>
+
+    <!-- 4. FRESAS (En primer plano, apetitosa y brillante) -->
+    <g transform="translate(42, 75)">
+      <!-- Silueta acorazonada de fresa madura -->
+      <path d="M 20 10 C 35 8, 38 25, 28 42 C 22 50, 18 50, 12 42 C 2 25, 5 8, 20 10 Z" fill="url(#fresa-grad)"/>
+      <!-- Semillitas doradas (aquenios) -->
+      <circle cx="15" cy="18" r="0.9" fill="#FFEE58"/>
+      <circle cx="23" cy="17" r="0.9" fill="#FFEE58"/>
+      <circle cx="19" cy="24" r="0.9" fill="#FFEE58"/>
+      <circle cx="27" cy="25" r="0.9" fill="#FFEE58"/>
+      <circle cx="13" cy="27" r="0.9" fill="#FFEE58"/>
+      <circle cx="17" cy="33" r="0.9" fill="#FFEE58"/>
+      <circle cx="23" cy="34" r="0.9" fill="#FFEE58"/>
+      <circle cx="20" cy="40" r="0.8" fill="#FFEE58"/>
+      <!-- Brillo reflejo en la fresa -->
+      <ellipse cx="14" cy="16" rx="3" ry="1.5" transform="rotate(-30 14 16)" fill="#FFFFFF" opacity="0.6"/>
+      <!-- Corona de hojas de la fresa -->
+      <path d="M 20 10 C 17 6, 11 7, 9 10 C 13 11, 16 12, 18 13 Z" fill="#4CAF50"/>
+      <path d="M 20 10 C 22 5, 27 6, 29 9 C 26 11, 23 12, 21 13 Z" fill="#4CAF50"/>
+      <path d="M 20 10 C 20 4, 18 2, 19 0 C 21 3, 21 6, 20 10 Z" fill="#2E7D32"/>
+    </g>
+
+    <!-- Pequeña flor de azahar / toque artesanal blanco -->
+    <g transform="translate(48, 58)">
+      <circle cx="0" cy="0" r="3" fill="#FFF" opacity="0.9"/>
+      <circle cx="-3" cy="-2" r="2.5" fill="#FFF9F5" opacity="0.9"/>
+      <circle cx="3" cy="-2" r="2.5" fill="#FFF9F5" opacity="0.9"/>
+      <circle cx="0" cy="4" r="2.5" fill="#FFF9F5" opacity="0.9"/>
+      <circle cx="0" cy="0" r="1.5" fill="#FFB300"/>
+    </g>
+  </g>
+
+  <!-- TIPOGRAFÍA Y MARCA NEIFIT -->
+  <g transform="translate(175, 42)">
+    <!-- Nombre "Neifit" en café #7A4E2D -->
+    <text x="0" y="55" font-family="'Poppins', 'Montserrat', 'Inter', sans-serif" font-weight="800" font-size="58" letter-spacing="-1.5" fill="url(#coffee-text-grad)">
+      Nei<tspan fill="#5F8D4E">fit</tspan>
+    </text>
+    
+    <!-- Puntos decorativos o brote sobre la 'i' -->
+    <circle cx="68" cy="18" r="4.5" fill="#5F8D4E"/>
+    <path d="M 68 18 C 72 13, 78 12, 79 16 C 76 18, 72 19, 68 18 Z" fill="#81C784"/>
+
+    <!-- Subtítulo o tagline de marca -->
+    <text x="3" y="82" font-family="'Inter', sans-serif" font-weight="600" font-size="13.5" letter-spacing="3.5" fill="#7A4E2D" opacity="0.85">
+      SABORES SALUDABLES &amp; NATURALES
+    </text>
+
+    <!-- Línea decorativa orgánica con hoja -->
+    <line x1="3" y1="94" x2="310" y2="94" stroke="#D98CA4" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
+    <circle cx="316" cy="94" r="3" fill="#5F8D4E"/>
+  </g>
+</svg>
+

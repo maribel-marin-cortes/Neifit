@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #F6E7D8;
+    color: #4B2E1F;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', 'Montserrat', sans-serif;
+    color: #4B2E1F;
+  }
+}
+
+/* Custom button classes from DESIGN.md */
+.btn-primary {
+  @apply bg-[#7A4E2D] hover:bg-[#67391F] text-white font-medium px-5 py-2.5 rounded-xl shadow-sm transition-all duration-200 active:scale-95 inline-flex items-center justify-center gap-2;
+}
+
+.btn-secondary {
+  @apply bg-[#5F8D4E] hover:bg-[#4E7540] text-white font-medium px-5 py-2.5 rounded-xl shadow-sm transition-all duration-200 active:scale-95 inline-flex items-center justify-center gap-2;
+}
+
+.btn-outline {
+  @apply border-2 border-[#7A4E2D] text-[#7A4E2D] hover:bg-[#7A4E2D] hover:text-white font-medium px-5 py-2.5 rounded-xl transition-all duration-200 inline-flex items-center justify-center gap-2;
+}
+
+.card-cream {
+  @apply bg-[#FFF8F2] rounded-2xl shadow-sm border border-[#7A4E2D]/10 hover:shadow-md transition-shadow;
+}
+
+.badge-pink {
+  @apply bg-[#F7D6E0] text-[#7A4E2D] text-xs font-semibold px-2.5 py-1 rounded-full;
+}
+
+.badge-green {
+  @apply bg-[#E8F5E9] text-[#2E7D32] text-xs font-semibold px-2.5 py-1 rounded-full inline-flex items-center gap-1;
+}
+
+.badge-red {
+  @apply bg-[#FFEBEE] text-[#C62828] text-xs font-semibold px-2.5 py-1 rounded-full inline-flex items-center gap-1;
+}
+

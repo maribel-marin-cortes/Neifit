@@ -1,0 +1,12 @@
+.python/
+**/.venv/
+**/venv/
+**/node_modules/
+**/__pycache__/
+**/*.pyc
+**/dist/
+**/.env
+**/.env.*
+!**/.env.example
+*.log
+tmp/
