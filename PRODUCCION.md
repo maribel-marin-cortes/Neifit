@@ -1,5 +1,12 @@
 # Neifit: preparación y despliegue
 
+> **Esquema físico en español:** para una instalación vacía utiliza únicamente
+> `supabase/neifit_esquema_completo_espanol.sql`. No ejecutes después
+> `activar_servicios_supabase.sql` ni la migración 0009. La alerta “Falta aplicar una
+> migración” también puede indicar que Render conserva una versión anterior del backend;
+> vuelve a desplegar el commit que consulta `perfiles`, `productos`, `pedidos`,
+> `configuracion_empresa` y las RPC `neifit_*` en español.
+
 Estado: código preparado para un piloto; **todavía no publicado ni aprobado para compradores**. No necesitas comprar un dominio: utiliza las URL HTTPS asignadas por Vercel y Render.
 
 ## Cambios de esta etapa

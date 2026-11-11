@@ -911,7 +911,7 @@ alter table public.cotizaciones add column if not exists respondida_por uuid ref
 create table if not exists public.notificaciones (
  id uuid primary key default gen_random_uuid(),
  usuario_id uuid not null references public.perfiles(id) on delete cascade,
- titulo text not null, mensaje text not null, link text not null,
+ titulo text not null, mensaje text not null, enlace text not null,
  creado_en timestamptz not null default now(), leido_en timestamptz
 );
 create index if not exists notifications_owner_date on public.notificaciones(usuario_id,creado_en desc);
@@ -938,8 +938,8 @@ begin
    elsif new.estado is distinct from old.estado or new.respondida_en is distinct from old.respondida_en then v_title:='Cotización: '||new.estado;
    else return new; end if;
  end if;
- insert into public.notificaciones(usuario_id,titulo,mensaje,link) values(new.usuario_id,v_title,v_number,v_link);
- insert into public.notificaciones(usuario_id,titulo,mensaje,link)
+ insert into public.notificaciones(usuario_id,titulo,mensaje,enlace) values(new.usuario_id,v_title,v_number,v_link);
+ insert into public.notificaciones(usuario_id,titulo,mensaje,enlace)
  select p.id,v_title,v_number,case when tg_table_name='pedidos' then '/admin?modulo=pedidos' else '/admin?modulo=cotizaciones' end
  from public.perfiles p where p.id<>new.usuario_id and public.neifit_actor_puede(p.id,case when tg_table_name='pedidos' then 'orders.manage' else 'quotes.manage' end);
  return new;

@@ -5,7 +5,9 @@ from app.core.supabase_rest import supabase_rest as db, uuid_value
 
 class SiteRepository:
     async def settings(self):
-        rows = await db.rows('company_settings', {'select': '*', 'singleton': 'eq.true'})
+        rows = await db.rows('configuracion_empresa', {
+            'select': 'id,business_name:nombre_negocio,phone_public:telefono_publico,whatsapp_number:numero_whatsapp,address:direccion,city:ciudad,opening_hours:horario_atencion,map_url:url_mapa,logo_url:url_logo,shipping_cost:costo_envio,updated_at:actualizado_en',
+            'registro_unico': 'eq.true'})
         if not rows:
             raise HTTPException(status_code=503, detail='Falta la configuración de la empresa')
         result = rows[0]
@@ -31,11 +33,16 @@ class SiteRepository:
             except InvalidOperation:
                 raise HTTPException(status_code=422, detail='Costo de domicilio inválido') from None
         if payload:
-            await db.request('PATCH','company_settings',params={'singleton':'eq.true'},data=payload)
+            fields = {'business_name':'nombre_negocio','phone_public':'telefono_publico',
+                      'whatsapp_number':'numero_whatsapp','address':'direccion','city':'ciudad',
+                      'opening_hours':'horario_atencion','map_url':'url_mapa','logo_url':'url_logo',
+                      'shipping_cost':'costo_envio'}
+            await db.request('PATCH','configuracion_empresa',params={'registro_unico':'eq.true'},
+                             data={fields[key]: value for key, value in payload.items()})
         return await self.settings()
 
     async def content(self):
-        rows = await db.rows('site_content', {'select':'key,body','is_published':'eq.true'})
+        rows = await db.rows('contenido_sitio', {'select':'key:clave,body:cuerpo','publicado':'eq.true'})
         return {row['key']: row['body'] for row in rows}
 
     async def update_content(self, data, user):
@@ -44,13 +51,13 @@ class SiteRepository:
         for key, value in data.items():
             if key not in allowed or not isinstance(value,str) or not value.strip() or len(value)>10000:
                 raise HTTPException(status_code=422,detail='Contenido institucional inválido')
-            rows.append({'key':key,'body':value.strip(),'is_published':True,'updated_by':user['id']})
+            rows.append({'clave':key,'cuerpo':value.strip(),'publicado':True,'actualizado_por':user['id']})
         if rows:
-            await db.request('POST','site_content',params={'on_conflict':'key'},data=rows,headers={'Prefer':'resolution=merge-duplicates'})
+            await db.request('POST','contenido_sitio',params={'on_conflict':'clave'},data=rows,headers={'Prefer':'resolution=merge-duplicates'})
         return await self.content()
 
     async def values(self):
-        return await db.rows('company_values',{'select':'*','is_published':'eq.true','order':'sort_order,id'})
+        return await db.rows('valores_empresa',{'select':'id,title:titulo,description:descripcion,sort_order:orden,is_published:publicado','publicado':'eq.true','order':'orden,id'})
 
     async def update_values(self, data):
         current = await self.values()
@@ -60,9 +67,9 @@ class SiteRepository:
         for row in data:
             if not isinstance(row.get('title'),str) or not row['title'].strip():
                 raise HTTPException(status_code=422,detail='Cada valor requiere un título')
-            rows.append({'id':uuid_value(row['id']),'title':row['title'].strip(),'description':row.get('description',''),
-                         'sort_order':row.get('sort_order',0),'is_published':True})
-        await db.request('POST','company_values',params={'on_conflict':'id'},data=rows,headers={'Prefer':'resolution=merge-duplicates'})
+            rows.append({'id':uuid_value(row['id']),'titulo':row['title'].strip(),'descripcion':row.get('description',''),
+                         'orden':row.get('sort_order',0),'publicado':True})
+        await db.request('POST','valores_empresa',params={'on_conflict':'id'},data=rows,headers={'Prefer':'resolution=merge-duplicates'})
         return await self.values()
 
 

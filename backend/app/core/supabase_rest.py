@@ -44,7 +44,12 @@ class SupabaseRest:
             error = {}
         code = error.get('code', '')
         if code in ('PGRST202', 'PGRST205', '42883', '42P01', '42703'):
-            raise HTTPException(status_code=503, detail='Falta aplicar una migración de Neifit en Supabase. Consulta PRODUCCION.md y PERSISTENCIA_SUPABASE.md.') from None
+            raise HTTPException(
+                status_code=503,
+                detail='El esquema de Supabase y esta versión del backend no coinciden. '
+                       'Aplica el instalador correspondiente y vuelve a desplegar el backend; '
+                       'consulta PRODUCCION.md y PERSISTENCIA_SUPABASE.md.',
+            ) from None
         status = {'42501': 403, 'P0002': 404, 'P0001': 409, '23505': 409,
                   '23503': 422, '23514': 422, '23502': 422, '22023': 422, '22P02': 422, '22003': 422}.get(code)
         if status:

@@ -1,5 +1,27 @@
 # Conectar y utilizar los servicios comerciales de Neifit
 
+> **Instalación nueva con tablas físicas en español:** ejecuta solamente
+> `supabase/neifit_esquema_completo_espanol.sql`. Las instrucciones de
+> `activar_servicios_supabase.sql` que aparecen debajo corresponden exclusivamente al
+> esquema histórico en inglés y no deben aplicarse sobre la instalación española.
+
+Para comprobar la instalación española:
+
+```sql
+select tablename, rowsecurity
+from pg_tables
+where schemaname = 'public'
+order by tablename;
+
+select public.neifit_leer_pedidos(
+  (select id from public.perfiles limit 1), null, null
+);
+```
+
+Después de cambiar al esquema español es obligatorio volver a desplegar el backend. Una
+respuesta `PGRST202`, `PGRST205`, `42P01` o `42703` suele indicar que el backend desplegado
+todavía solicita una RPC, tabla o columna del contrato anterior.
+
 El backend ya utiliza la Data API de Supabase cuando tiene `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`. No necesita `DATABASE_URL` para este funcionamiento. Si Supabase falla, no devuelve registros de demostración ni muestra éxito ficticio.
 
 ## Activar en el proyecto existente
