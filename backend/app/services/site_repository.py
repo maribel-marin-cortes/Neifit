@@ -5,6 +5,25 @@ from app.core.tenant import current_company_id
 
 
 class SiteRepository:
+    async def theme(self):
+        rows = await db.rows('temas_empresa', {
+            'select': 'primary_color:color_primario,secondary_color:color_secundario,accent_color:color_acento,background_color:color_fondo,surface_color:color_superficie,text_color:color_texto,logo_url:url_logo,icon_url:url_icono,cover_url:url_portada,heading_font:tipografia_titulos,body_font:tipografia_texto,border_radius:radio_bordes,button_style:estilo_botones,published:publicado,updated_at:actualizado_en',
+            'empresa_id': 'eq.' + current_company_id(), 'publicado': 'eq.true', 'limit': '1'})
+        if not rows:
+            raise HTTPException(status_code=503, detail='Falta configurar la apariencia de la empresa')
+        return rows[0]
+
+    async def update_theme(self, data, user):
+        fields = {'primary_color':'color_primario','secondary_color':'color_secundario',
+                  'accent_color':'color_acento','background_color':'color_fondo',
+                  'surface_color':'color_superficie','text_color':'color_texto','logo_url':'url_logo',
+                  'icon_url':'url_icono','cover_url':'url_portada','heading_font':'tipografia_titulos',
+                  'body_font':'tipografia_texto','border_radius':'radio_bordes',
+                  'button_style':'estilo_botones','published':'publicado'}
+        payload = {fields[key]: value for key,value in data.model_dump().items()}
+        result = await db.rpc('neifit_guardar_tema',p_actor=user['id'],p_empresa=current_company_id(),p_tema=payload)
+        return {key: result.get(column) for key,column in fields.items()} | {'updated_at': result.get('actualizado_en')}
+
     async def settings(self):
         rows = await db.rows('configuracion_empresa', {
             'select': 'id,business_name:nombre_negocio,phone_public:telefono_publico,whatsapp_number:numero_whatsapp,address:direccion,city:ciudad,opening_hours:horario_atencion,map_url:url_mapa,logo_url:url_logo,shipping_cost:costo_envio,updated_at:actualizado_en',

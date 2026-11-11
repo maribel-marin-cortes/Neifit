@@ -4,10 +4,12 @@ import { ShoppingBag, Menu, X, User, MessageCircle, LogOut } from 'lucide-react'
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import Notifications from './Notifications';
+import { useCompanyTheme } from '../context/ThemeContext';
 
 export default function Navbar({ menuOpen = false, onToggleMenu, showModules = true }) {
   const { user, logout, hasPermission } = useAuth();
   const { totalItemsCount } = useCart();
+  const { theme } = useCompanyTheme();
   const [error, setError] = useState('');
   const navigate = useNavigate();
   async function handleLogout() {
@@ -23,7 +25,7 @@ export default function Navbar({ menuOpen = false, onToggleMenu, showModules = t
             {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>}
           <Link to="/" aria-label="Neifit, ir al inicio" className="shrink-0">
-            <img src="/logo-neifit-tropical.png" alt="Logo Neifit" className="h-16 w-24 object-contain" />
+            <img src={theme.logo_url || '/logo-neifit-tropical.png'} alt="Logo de la empresa" className="h-16 w-24 object-contain" />
           </Link>
           <p className="hidden sm:block text-xs text-[#7A4E2D] border-l border-[#7A4E2D]/20 pl-4">Postres, snacks y bebidas<br /><span className="font-semibold text-[#4B2E1F]">Sabores de nuestras raíces</span></p>
         </div>

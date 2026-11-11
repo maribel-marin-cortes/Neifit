@@ -50,7 +50,7 @@ export default function LoginPage({ initialMode = 'login' }) {
 
   const handleDemoLogin = (role) => {
     loginWithDemoRole(role);
-    navigate(role === 'admin' ? '/admin' : role === 'mensajeria' ? '/mensajeria' : '/');
+    navigate(['propietario','admin','vendedor'].includes(role) ? '/admin' : role === 'mensajeria' ? '/mensajeria' : '/');
   };
 
   const handleGoogleLogin = async () => {

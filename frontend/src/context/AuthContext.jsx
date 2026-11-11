@@ -169,7 +169,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('neifit_token');
   };
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = ['propietario','admin'].includes(user?.role);
   const isMensajeria = user?.role === 'mensajeria';
   const isCliente = user?.role === 'cliente';
   const permissions = user?.permissions ?? (!isSupabaseConfigured ? defaults[user?.role] || [] : []);

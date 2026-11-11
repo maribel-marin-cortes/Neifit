@@ -2,39 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-primary: #7A4E2D;
+  --color-secondary: #5F8D4E;
+  --color-accent: #D98CA4;
+  --color-background: #F6E7D8;
+  --color-surface: #FFF8F2;
+  --color-text: #4B2E1F;
+  --font-heading: Poppins;
+  --font-body: Inter;
+  --radius-company: 16px;
+}
+
 .input-field {
-  @apply block rounded-xl border border-[#7A4E2D]/25 bg-[#FFF8F2] px-3 py-2 text-[#4B2E1F] focus:outline-none focus:ring-2 focus:ring-[#5F8D4E]/50;
+  @apply block border px-3 py-2 focus:outline-none focus:ring-2;
+  border-radius: var(--radius-company); border-color: color-mix(in srgb, var(--color-primary) 25%, transparent);
+  background: var(--color-surface); color: var(--color-text);
 }
 
 @layer base {
   body {
-    background-color: #F6E7D8;
-    color: #4B2E1F;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Poppins', 'Montserrat', sans-serif;
-    color: #4B2E1F;
+    font-family: var(--font-heading), 'Montserrat', sans-serif;
+    color: var(--color-text);
   }
 }
 
 /* Custom button classes from DESIGN.md */
 .btn-primary {
-  @apply bg-[#7A4E2D] hover:bg-[#67391F] text-white font-medium px-5 py-2.5 rounded-xl shadow-sm transition-all duration-200 active:scale-95 inline-flex items-center justify-center gap-2;
+  @apply text-white font-medium px-5 py-2.5 shadow-sm transition-all duration-200 active:scale-95 inline-flex items-center justify-center gap-2;
+  background: var(--color-primary); border-radius: var(--radius-company); border: 2px solid var(--color-primary);
 }
 
 .btn-secondary {
-  @apply bg-[#5F8D4E] hover:bg-[#4E7540] text-white font-medium px-5 py-2.5 rounded-xl shadow-sm transition-all duration-200 active:scale-95 inline-flex items-center justify-center gap-2;
+  @apply text-white font-medium px-5 py-2.5 shadow-sm transition-all duration-200 active:scale-95 inline-flex items-center justify-center gap-2;
+  background: var(--color-secondary); border-radius: var(--radius-company);
 }
 
 .btn-outline {
-  @apply border-2 border-[#7A4E2D] text-[#7A4E2D] hover:bg-[#7A4E2D] hover:text-white font-medium px-5 py-2.5 rounded-xl transition-all duration-200 inline-flex items-center justify-center gap-2;
+  @apply border-2 font-medium px-5 py-2.5 transition-all duration-200 inline-flex items-center justify-center gap-2;
+  border-color: var(--color-primary); color: var(--color-primary); border-radius: var(--radius-company);
 }
 
 .card-cream {
-  @apply bg-[#FFF8F2] rounded-2xl shadow-sm border border-[#7A4E2D]/10 hover:shadow-md transition-shadow;
+  @apply shadow-sm border hover:shadow-md transition-shadow;
+  background: var(--color-surface); border-color: color-mix(in srgb, var(--color-primary) 10%, transparent); border-radius: var(--radius-company);
 }
+
+:root[data-button-style="contorno"] .btn-primary { background: transparent; color: var(--color-primary); }
+:root[data-button-style="suave"] .btn-primary { background: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface)); color: var(--color-primary); border-color: transparent; }
 
 .badge-pink {
   @apply bg-[#F7D6E0] text-[#7A4E2D] text-xs font-semibold px-2.5 py-1 rounded-full;

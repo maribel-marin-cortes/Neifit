@@ -160,12 +160,21 @@ def require_permission(*permissions):
 
 
 async def require_admin(user: dict = Depends(require_auth)) -> dict:
-    if user.get("role") != "admin":
+    if user.get("role") not in ("propietario", "admin"):
         raise HTTPException(status_code=403, detail="Solo los administradores pueden realizar esta acción")
     return user
 
 
 async def require_mensajeria_or_admin(user: dict = Depends(require_auth)) -> dict:
-    if user.get("role") not in ("admin", "mensajeria"):
+    if user.get("role") not in ("propietario", "admin", "mensajeria"):
         raise HTTPException(status_code=403, detail="Acceso restringido al personal autorizado")
+    return user
+
+
+async def require_platform_superadmin(user: dict = Depends(require_auth)) -> dict:
+    from app.core.supabase_rest import supabase_rest as db
+    rows = await db.rows('superadministradores_plataforma', {
+        'usuario_id': 'eq.' + user['id'], 'activo': 'eq.true', 'select': 'usuario_id', 'limit': '1'})
+    if not rows:
+        raise HTTPException(status_code=403, detail='Superadministrador de plataforma requerido')
     return user

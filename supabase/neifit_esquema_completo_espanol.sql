@@ -284,10 +284,10 @@ values ('productos','productos',true,5242880,array['image/jpeg','image/png','ima
 on conflict (id) do nothing;
 -- No se conceden cargas/borrados al navegador. Usar backend o Dashboard.
 
-insert into public.categorias(nombre, identificador_url, descripcion) values
- ('Postres','postres','Postres de la selección Neifit.'),
- ('Snacks','snacks','Snacks de la selección Neifit.'),
- ('Bebidas','bebidas','Bebidas de la selección Neifit.');
+insert into public.categorias(nombre, identificador_url, descripcion, url_imagen) values
+ ('Postres','postres','Postres de la selección Neifit.','/images/postre-maracuya.png'),
+ ('Snacks','snacks','Snacks de la selección Neifit.','/images/cocadas.png'),
+ ('Bebidas','bebidas','Bebidas de la selección Neifit.','/images/bebidas-ilustrativas.png');
 insert into public.configuracion_empresa(nombre_negocio, telefono_publico, numero_whatsapp, direccion, ciudad, horario_atencion)
 values ('Neifit','+57 3127827020','573127827020','CR 28B # 38F - 56','Medellín, Antioquia, Colombia',
  '{"timezone":"America/Bogota","monday":"09:00-18:00","tuesday":"09:00-18:00","wednesday":"09:00-18:00","thursday":"09:00-18:00","friday":"09:00-18:00","saturday":null,"sunday":null}'::jsonb);

@@ -52,11 +52,11 @@ export default function AccessManagement({ view = 'roles' }) {
         </fieldset>
       </form>
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {config.roles.map(role => <fieldset key={role.role} className="card-cream p-5" disabled={disabled || role.role === 'admin'}>
+        {config.roles.map(role => <fieldset key={role.role} className="card-cream p-5" disabled={disabled || ['propietario','admin'].includes(role.role)}>
           <legend className="font-bold px-1">{roleName(role.role)} <span className="text-xs">({role.role})</span></legend>
-          {role.role === 'admin' && <p className="text-xs mb-3">Acceso completo protegido.</p>}
+          {['propietario','admin'].includes(role.role) && <p className="text-xs mb-3">Acceso completo protegido.</p>}
           <Permissions codes={role.allowed_permissions} selected={role.permissions} descriptions={config.permissions} onChange={permissions => setConfig(current => ({ ...current, roles: current.roles.map(r => r.role === role.role ? { ...r, permissions } : r) }))} />
-          {role.role !== 'admin' && <button type="button" onClick={() => run(() => api.updateRolePermissions(role.role, role.permissions), `Permisos de ${roleName(role.role)} guardados.`)} className="btn-primary mt-5 text-sm">Guardar permisos</button>}
+          {!['propietario','admin'].includes(role.role) && <button type="button" onClick={() => run(() => api.updateRolePermissions(role.role, role.permissions), `Permisos de ${roleName(role.role)} guardados.`)} className="btn-primary mt-5 text-sm">Guardar permisos</button>}
         </fieldset>)}
       </div>
     </> : <>

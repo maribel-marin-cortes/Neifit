@@ -61,8 +61,12 @@ Los usuarios se relacionan mediante `miembros_empresa` y su rol se evalúa dentr
 empresa activa. Las tablas comerciales guardan `empresa_id`, las relaciones de detalle
 usan claves compuestas y las RPC de servidor reciben `p_empresa`.
 
-Para una instalación existente en español ejecuta, en orden, `0010_ajustes_esquema_espanol.sql`
-y `0011_multiempresa.sql`. No vuelvas a ejecutar el instalador completo ni elimines tablas.
+Para una instalación existente en español ejecuta, en orden, `0010_ajustes_esquema_espanol.sql`,
+`0011_multiempresa.sql`, `0012_datos_demo_multiempresa.sql` y
+`0013_temas_aislamiento_multiempresa.sql`. No vuelvas a ejecutar el instalador completo ni
+elimines tablas. La migración 0013 crea temas, roles empresariales independientes, Storage
+segmentado y una administración de plataforma separada; no designa superadministradores
+automáticamente.
 
 ## Qué se guarda
 

@@ -12,4 +12,5 @@
 tmp/
 backups/
 *.dump
+supabase/datos_demo_espanol_creados.json
 presentacion/Neifit_presentacion_consultas.pptx

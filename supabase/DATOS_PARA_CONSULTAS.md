@@ -1,5 +1,39 @@
 # Datos de prueba para consultas
 
+## Esquema español multiempresa
+
+Para la base nueva con tablas y atributos en español, aplica primero las migraciones
+`0010`, `0011`, `0012` y `0013`. Después utiliza `backend/scripts/cargar_demo_espanol.py`; el cargador
+anterior de este documento se conserva solamente para el esquema inglés.
+
+Previsualización segura:
+
+```powershell
+.\backend\.venv\Scripts\python.exe backend/scripts/cargar_demo_espanol.py
+```
+
+Si ya existe una cuenta administradora real:
+
+```powershell
+.\backend\.venv\Scripts\python.exe backend/scripts/cargar_demo_espanol.py --aplicar --empresa neifit --administrador TU_CORREO_ADMIN
+```
+
+Para recrear además `admin@neifit.com`, `mensajeria@neifit.com` y
+`cliente@neifit.com`, define sus contraseñas solo en la sesión local. No guardes esos
+valores en `.env`, GitHub, capturas o conversaciones:
+
+```powershell
+$env:NEIFIT_DEMO_ADMIN_PASSWORD='CONTRASEÑA_PRIVADA'
+$env:NEIFIT_DEMO_MENSAJERIA_PASSWORD='CONTRASEÑA_PRIVADA'
+$env:NEIFIT_DEMO_CLIENTE_PASSWORD='CONTRASEÑA_PRIVADA'
+.\backend\.venv\Scripts\python.exe backend/scripts/cargar_demo_espanol.py --aplicar --empresa neifit --crear-usuarios-demo
+Remove-Item Env:NEIFIT_DEMO_ADMIN_PASSWORD,Env:NEIFIT_DEMO_MENSAJERIA_PASSWORD,Env:NEIFIT_DEMO_CLIENTE_PASSWORD
+```
+
+El resultado contiene los mismos 13 productos, 3 cotizaciones, 3 pedidos y dos pagos
+aprobados simulados. El manifiesto generado queda excluido de Git porque contiene UUID
+de la instalación. Verifica todo con `supabase/consultas_datos_demo_espanol.sql`.
+
 Por autorización del usuario se cargaron valores inventados para practicar consultas en el proyecto Supabase conectado. No son precios, inventario, clientes, ventas ni solicitudes comerciales reales.
 
 - 13 productos con nombres sin prefijo, slug `prueba-...`, descripciones breves e imágenes ilustrativas locales. Por solicitud del usuario se retiraron las etiquetas públicas; los precios y existencias siguen siendo valores inventados autorizados. La procedencia se conserva en este documento, en el manifiesto de UUID y en los metadatos privados de las transacciones simuladas.

@@ -1,6 +1,7 @@
 import CatalogImage from '../../components/CatalogImage';
 import AccessManagement from './AccessManagement';
 import SiteContentEditor from './SiteContentEditor';
+import AppearanceEditor from './AppearanceEditor';
 import { CashReceipt, QuoteOffer } from '../../components/OperationsForms';
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -11,11 +12,12 @@ import { formatCOP } from '../../components/ProductCard';
 import { adminOrderStatusOptions, orderStatusLabel } from '../../services/orderStatusFlow';
 import {
   Package, Users, ShoppingBag, FileText, Settings,
-  Plus, Edit3, Trash2, Check, X, AlertTriangle, Loader2, BarChart2
+  Plus, Edit3, Trash2, Check, X, AlertTriangle, Loader2, BarChart2, Palette
 } from 'lucide-react';
 
 const TABS = [
   { key: 'contenido', label: 'Contenido institucional', icon: Settings },
+  { key: 'apariencia', label: 'Apariencia', icon: Palette },
   { key: 'accesos', label: 'Roles y permisos', icon: Users },
   { key: 'dashboard', label: 'Dashboard', icon: BarChart2 },
   { key: 'productos', label: 'Productos', icon: Package },
@@ -128,6 +130,7 @@ export default function AdminPage() {
           <>
             {tab === 'accesos' && <AccessManagement />}
             {tab === 'contenido' && <SiteContentEditor />}
+            {tab === 'apariencia' && <AppearanceEditor />}
             {/* DASHBOARD */}
             {tab === 'dashboard' && (
               <div className="space-y-6">
@@ -293,7 +296,7 @@ export default function AdminPage() {
                           catch (err) { setLoadError(err.message); }
                         }}><option value="">Sin asignar</option>{deliveryUsers.map(person => <option key={person.id} value={person.id}>{person.full_name || person.id}</option>)}</select>
                       </label>
-                      {user?.role === 'admin' && <CashReceipt order={o} onSaved={updated => setOrders(rows => rows.map(row => row.id === updated.id ? updated : row))} />}
+                      {['propietario','admin'].includes(user?.role) && <CashReceipt order={o} onSaved={updated => setOrders(rows => rows.map(row => row.id === updated.id ? updated : row))} />}
                     </div>
                   ))}
                 </div>

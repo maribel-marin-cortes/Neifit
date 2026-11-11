@@ -43,6 +43,9 @@ with psycopg.connect(**connection,autocommit=True) as owner:
         c.execute((ROOT/'supabase/neifit_esquema_completo_espanol.sql').read_text(encoding='utf-8-sig'))
         c.execute((ROOT/'supabase/migrations/0010_ajustes_esquema_espanol.sql').read_text(encoding='utf-8'))
         c.execute((ROOT/'supabase/migrations/0011_multiempresa.sql').read_text(encoding='utf-8'))
+        c.execute((ROOT/'supabase/migrations/0012_datos_demo_multiempresa.sql').read_text(encoding='utf-8'))
+        c.execute((ROOT/'supabase/migrations/0012_datos_demo_multiempresa.sql').read_text(encoding='utf-8'))
+        c.execute((ROOT/'supabase/migrations/0013_temas_aislamiento_multiempresa.sql').read_text(encoding='utf-8'))
         assert c.execute("select count(*) from public.empresas where slug='neifit'").fetchone()[0]==1
         assert c.execute("select count(*) from public.miembros_empresa").fetchone()[0]==c.execute("select count(*) from public.perfiles").fetchone()[0]
         assert c.execute("select count(*) from information_schema.columns where table_schema='public' and column_name='empresa_id'").fetchone()[0]>=15
@@ -55,4 +58,9 @@ with psycopg.connect(**connection,autocommit=True) as owner:
             raise AssertionError('La clave compuesta permitió mezclar empresas')
         except psycopg.errors.ForeignKeyViolation:
             pass
-        print('OK instalación multiempresa: datos existentes asignados a Neifit y aislamiento instalado.')
+        assert c.execute("select count(*) from pg_proc where proname='neifit_registrar_pago_simulado'").fetchone()[0]==1
+        assert c.execute("select pg_get_functiondef('public.neifit_aviso_documento()'::regprocedure) like '%new.empresa_id%'").fetchone()[0]
+        assert c.execute("select count(*) from public.temas_empresa where empresa_id='00000000-0000-0000-0000-000000000001'").fetchone()[0]==1
+        assert c.execute("select count(*) from public.roles_empresa where empresa_id='00000000-0000-0000-0000-000000000001'").fetchone()[0]>=5
+        assert c.execute("select count(*) from public.permisos_rol_empresa where empresa_id='00000000-0000-0000-0000-000000000001'").fetchone()[0]>0
+        print('OK instalación multiempresa: aislamiento y soporte seguro para datos demo instalados.')

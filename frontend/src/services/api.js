@@ -13,8 +13,9 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api
 let sessionRefresh = null;
 
 function activeCompanySlug() {
+  const pathMatch = typeof window === 'undefined' ? null : window.location.pathname.match(/^\/tienda\/([a-z0-9][a-z0-9-]{1,61}[a-z0-9])(?:\/|$)/);
   const requested = typeof window === 'undefined' ? null
-    : new URLSearchParams(window.location.search).get('empresa');
+    : (pathMatch?.[1] || new URLSearchParams(window.location.search).get('empresa'));
   if (requested && /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(requested)) {
     localStorage.setItem('neifit_empresa', requested);
     return requested;
@@ -106,7 +107,9 @@ async function request(endpoint, options = {}) {
 export const api = {
   getCompanies() { return request('/empresas'); },
   createCompany(data) { return request('/empresas', { method: 'POST', body: JSON.stringify(data) }); },
-  selectCompany(slug) { localStorage.setItem('neifit_empresa', slug); },
+  selectCompany(slug) { localStorage.setItem('neifit_empresa', slug); window.dispatchEvent(new Event('neifit-company-change')); },
+  getCompanyTheme() { return request('/sitio/tema'); },
+  updateCompanyTheme(data) { return request('/sitio/tema', { method: 'PUT', body: JSON.stringify(data) }); },
   getNotifications() { return request('/notificaciones'); },
   readNotification(id) { return request(`/notificaciones/${id}/leer`, { method: 'PATCH' }); },
   respondQuote(id, data) { return request(`/cotizaciones/${id}/respuesta`, { method: 'POST', body: JSON.stringify(data) }); },

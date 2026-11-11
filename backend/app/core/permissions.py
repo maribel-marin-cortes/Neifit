@@ -18,13 +18,16 @@ PERMISSIONS = {
     'content.manage': 'Gestionar contenido institucional',
     'access.manage': 'Gestionar roles y permisos',
     'users.manage': 'Gestionar usuarios y registrar mensajeros',
+    'appearance.manage': 'Gestionar apariencia de la empresa',
 }
 ROLE_PERMISSIONS = {
     'cliente': ['catalog.read', 'orders.create', 'orders.read_own', 'quotes.create', 'quotes.read_own', 'profile.read'],
     'mensajeria': ['delivery.read_assigned', 'delivery.start', 'delivery.complete', 'delivery.issue', 'profile.read'],
     'admin': list(PERMISSIONS),
+    'propietario': list(PERMISSIONS),
+    'vendedor': ['catalog.read', 'profile.read', 'products.manage', 'orders.manage', 'quotes.manage'],
 }
-CUSTOM_ROLE_PERMISSIONS = [code for code in PERMISSIONS if code not in {'access.manage', 'users.manage'}]
+CUSTOM_ROLE_PERMISSIONS = [code for code in PERMISSIONS if code not in {'access.manage', 'users.manage', 'appearance.manage'}]
 DELIVERY_STATUS_PERMISSIONS = {
     'en_ruta': 'delivery.start',
     'entregado': 'delivery.complete', 'novedad': 'delivery.issue',

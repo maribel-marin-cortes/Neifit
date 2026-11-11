@@ -30,6 +30,16 @@
     "quotes.manage",
     "content.manage",
     "access.manage",
-    "users.manage"
+    "users.manage",
+    "appearance.manage"
+  ],
+  "propietario": [
+    "catalog.read", "orders.create", "orders.read_own", "quotes.create", "quotes.read_own",
+    "profile.read", "delivery.read_assigned", "delivery.start", "delivery.complete", "delivery.issue",
+    "products.manage", "orders.manage", "quotes.manage", "content.manage", "access.manage",
+    "users.manage", "appearance.manage"
+  ],
+  "vendedor": [
+    "catalog.read", "profile.read", "products.manage", "orders.manage", "quotes.manage"
   ]
 }

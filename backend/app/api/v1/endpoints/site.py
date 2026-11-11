@@ -6,8 +6,23 @@ from app.services.product_service import ProductService
 from app.services.category_service import CategoryService
 from app.core.supabase_rest import database_enabled
 from app.services.site_repository import site_repository
+from app.schemas.theme import CompanyTheme
 
 router = APIRouter()
+
+DEFAULT_THEME = CompanyTheme().model_dump()
+
+
+@router.get('/tema')
+@router.get('/theme', deprecated=True)
+async def get_theme():
+    return await site_repository.theme() if database_enabled() else DEFAULT_THEME
+
+
+@router.put('/tema')
+@router.put('/theme', deprecated=True)
+async def update_theme(data: CompanyTheme, admin=Depends(require_permission('appearance.manage'))):
+    return await site_repository.update_theme(data, admin) if database_enabled() else data.model_dump()
 
 
 @router.get('/productos-destacados', response_model=list[ProductPreview])

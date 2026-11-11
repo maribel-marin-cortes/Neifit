@@ -9,10 +9,10 @@ export function safeReturnTo(value) {
 
 export function loginDestination(destination, role) {
   const next = safeReturnTo(destination);
-  if (!['admin', 'cliente', 'mensajeria'].includes(role)) return '/';
+  if (!['propietario', 'admin', 'vendedor', 'cliente', 'mensajeria'].includes(role)) return '/';
   if (role === 'mensajeria') return '/mensajeria';
-  if (next.startsWith('/admin') && role !== 'admin') return '/catalogo';
-  if (next.startsWith('/mensajeria') && role !== 'admin') return '/catalogo';
+  if (next.startsWith('/admin') && !['propietario','admin','vendedor'].includes(role)) return '/catalogo';
+  if (next.startsWith('/mensajeria') && !['propietario','admin'].includes(role)) return '/catalogo';
   return next;
 }
 

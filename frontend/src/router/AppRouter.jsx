@@ -36,7 +36,7 @@ function ProtectedRoute({ children, requiredRoles }) {
 
 function LayoutWithNavFooter({ children }) {
   const { pathname } = useLocation();
-  if (['/', '/politica-privacidad', '/terminos'].includes(pathname)) return <SiteLayout>{children}</SiteLayout>;
+  if (['/', '/politica-privacidad', '/terminos'].includes(pathname) || /^\/tienda\/[a-z0-9-]+$/.test(pathname)) return <SiteLayout>{children}</SiteLayout>;
   return <ProtectedRoute><SiteLayout>{children}</SiteLayout></ProtectedRoute>;
 }
 
@@ -49,6 +49,9 @@ export default function AppRouter() {
     <Routes>
       {/* Public routes with full layout */}
       <Route path="/" element={<LayoutWithNavFooter><LandingPage /></LayoutWithNavFooter>} />
+      <Route path="/tienda/:empresa" element={<LayoutWithNavFooter><LandingPage /></LayoutWithNavFooter>} />
+      <Route path="/tienda/:empresa/catalogo" element={<LayoutWithNavFooter><CatalogoPage /></LayoutWithNavFooter>} />
+      <Route path="/tienda/:empresa/productos/:slug" element={<LayoutWithNavFooter><ProductoDetallePage /></LayoutWithNavFooter>} />
       <Route path="/catalogo" element={<LayoutWithNavFooter><CatalogoPage /></LayoutWithNavFooter>} />
       <Route path="/productos/:slug" element={<LayoutWithNavFooter><ProductoDetallePage /></LayoutWithNavFooter>} />
       <Route path="/carrito" element={<LayoutWithNavFooter><CarritoPage /></LayoutWithNavFooter>} />

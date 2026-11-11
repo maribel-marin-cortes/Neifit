@@ -55,10 +55,11 @@ async def configuration(admin=Depends(require_permission('access.manage'))):
 @router.put('/roles/{role}/permisos', dependencies=[Depends(require_admin)])
 @router.put('/roles/{role}/permissions', dependencies=[Depends(require_admin)], deprecated=True)
 async def assign_permissions(role: Role, data: PermissionAssignment, admin=Depends(require_permission('access.manage'))):
-    if role == 'admin' or 'profile.read' not in data.permissions or not set(data.permissions).issubset(ROLE_PERMISSIONS.get(role, CUSTOM_ROLE_PERMISSIONS)):
+    if role in ('propietario','admin') or 'profile.read' not in data.permissions or not set(data.permissions).issubset(ROLE_PERMISSIONS.get(role, CUSTOM_ROLE_PERMISSIONS)):
         raise HTTPException(status_code=403, detail='Solo puedes modificar los permisos delegables de cliente y mensajería')
-    await access_service.request('POST', 'rpc/neifit_establecer_permisos_rol', json={
-        'p_rol': role, 'p_permisos': sorted(set(data.permissions)), 'p_actor_id': admin['id']})
+    await access_service.request('POST', 'rpc/neifit_establecer_permisos_rol_empresa', json={
+        'p_rol': role, 'p_permisos': sorted(set(data.permissions)), 'p_actor': admin['id'],
+        'p_empresa': current_company_id()})
     return {'role': role, 'permissions': sorted(set(data.permissions))}
 
 
@@ -66,8 +67,9 @@ async def assign_permissions(role: Role, data: PermissionAssignment, admin=Depen
 async def create_role(data: NewRole, admin=Depends(require_permission('access.manage'))):
     if data.code in ROLE_PERMISSIONS or 'profile.read' not in data.permissions or not set(data.permissions).issubset(CUSTOM_ROLE_PERMISSIONS):
         raise HTTPException(status_code=403, detail='Nombre reservado o permisos no delegables. Incluye profile.read.')
-    await access_service.request('POST', 'rpc/neifit_crear_rol', json={
-        'p_actor_id': admin['id'], 'p_codigo': data.code, 'p_nombre': data.name.strip(), 'p_permisos': sorted(set(data.permissions))})
+    await access_service.request('POST', 'rpc/neifit_crear_rol_empresa', json={
+        'p_actor': admin['id'], 'p_empresa': current_company_id(), 'p_codigo': data.code,
+        'p_nombre': data.name.strip(), 'p_permisos': sorted(set(data.permissions))})
     return {'role': data.code, 'name': data.name.strip()}
 
 

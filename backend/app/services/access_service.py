@@ -28,16 +28,18 @@ class AccessService:
             raise HTTPException(status_code=503, detail='Servicio de gestión de accesos no disponible') from None
 
     async def permissions_for_role(self, role):
-        if role == 'admin':
-            return list(ROLE_PERMISSIONS['admin'])
-        rows = await self.request('GET', 'permisos_rol', params={'rol': 'eq.' + role, 'select': 'permission_code:codigo_permiso'})
+        rows = await self.request('GET', 'permisos_rol_empresa', params={
+            'empresa_id': 'eq.' + current_company_id(), 'rol': 'eq.' + role,
+            'select': 'permission_code:codigo_permiso'})
         if not isinstance(rows, list):
             raise HTTPException(status_code=503, detail='No se pudieron verificar permisos')
         return [row['permission_code'] for row in rows if row.get('permission_code') in ROLE_PERMISSIONS.get(role, CUSTOM_ROLE_PERMISSIONS)]
 
     async def configuration(self):
         roles = []
-        definitions = await self.request('GET', 'roles_acceso', params={'select': 'code:codigo,name:nombre', 'order': 'nombre'}) if settings.RBAC_DATABASE_ENABLED else [
+        definitions = await self.request('GET', 'roles_empresa', params={
+            'empresa_id': 'eq.' + current_company_id(), 'select': 'code:codigo,name:nombre',
+            'order': 'nombre'}) if settings.RBAC_DATABASE_ENABLED else [
             {'code': code, 'name': name} for code, name in [('admin', 'Administrador'), ('cliente', 'Cliente'), ('mensajeria', 'Mensajero / domiciliario')]]
         for definition in definitions:
             role = definition['code']
@@ -53,7 +55,9 @@ class AccessService:
 
     async def create_user(self, data, actor_id):
         # Comprobar migración y rol antes de crear una identidad en Auth.
-        roles = await self.request('GET', 'roles_acceso', params={'codigo': 'eq.' + data.role, 'select': 'code:codigo'})
+        roles = await self.request('GET', 'roles_empresa', params={
+            'empresa_id': 'eq.' + current_company_id(), 'codigo': 'eq.' + data.role,
+            'select': 'code:codigo'})
         if not roles:
             raise HTTPException(status_code=422, detail='El rol seleccionado no existe')
         headers = service_headers(settings.SUPABASE_SERVICE_ROLE_KEY)

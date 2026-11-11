@@ -3,7 +3,7 @@ export function requiredRoutePermission(pathname, search = '') {
   if (pathname.startsWith('/admin')) {
     if (pathname.startsWith('/admin/productos/')) return 'products.manage';
     const module = new URLSearchParams(search).get('modulo');
-    return ({ accesos: 'access.manage', productos: 'products.manage', cotizaciones: 'quotes.manage', contenido: 'content.manage' })[module] || 'orders.manage';
+    return ({ accesos: 'access.manage', productos: 'products.manage', cotizaciones: 'quotes.manage', contenido: 'content.manage', apariencia: 'appearance.manage' })[module] || 'orders.manage';
   }
   if (pathname.startsWith('/mensajeria')) return 'delivery.read_assigned';
   if (pathname.startsWith('/catalogo') || pathname.startsWith('/productos')) return 'catalog.read';

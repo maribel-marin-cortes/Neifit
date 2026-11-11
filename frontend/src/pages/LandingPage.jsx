@@ -5,8 +5,10 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Star, MapPin, Phone, Clock, MessageCircle, ChevronDown } from 'lucide-react';
 import { api } from '../services/api';
 import ProductCard from '../components/ProductCard';
+import { useCompanyTheme } from '../context/ThemeContext';
 
 export default function LandingPage() {
+  const { theme } = useCompanyTheme();
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [content, setContent] = useState({});
@@ -58,8 +60,8 @@ export default function LandingPage() {
             <div className="relative w-64 sm:w-80 lg:w-96 aspect-[3/2]">
               <div className="absolute inset-0 bg-[#D98CA4]/20 rounded-full blur-3xl"></div>
               <img
-                src="/logo-neifit-tropical.png"
-                alt="Neifit — Sabores naturales"
+                src={theme.cover_url || theme.logo_url || '/logo-neifit-tropical.png'}
+                alt="Portada de la empresa"
                 className="relative w-full h-full object-contain rounded-2xl drop-shadow-2xl"
               />
             </div>

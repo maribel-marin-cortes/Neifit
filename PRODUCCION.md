@@ -9,8 +9,9 @@
 
 > **Multiempresa:** después del instalador en español ejecuta una sola vez
 > `supabase/migrations/0010_ajustes_esquema_espanol.sql` y luego
-> `supabase/migrations/0011_multiempresa.sql`. La segunda migración conserva los datos,
-> crea a `neifit` como primera empresa y vuelve obligatorio el aislamiento por empresa.
+> `supabase/migrations/0011_multiempresa.sql`, `0012_datos_demo_multiempresa.sql` y
+> `0013_temas_aislamiento_multiempresa.sql`. Conservan los datos, crean a `neifit` como
+> primera empresa, aíslan roles y permisos y habilitan apariencia y Storage por empresa.
 
 Estado: código preparado para un piloto; **todavía no publicado ni aprobado para compradores**. No necesitas comprar un dominio: utiliza las URL HTTPS asignadas por Vercel y Render.
 

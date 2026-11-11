@@ -5,17 +5,18 @@ import { CartProvider } from './context/CartContext';
 import AppRouter from './router/AppRouter';
 import { ModulesMenuProvider } from './components/SiteLayout';
 import './index.css';
+import { ThemeProvider } from './context/ThemeContext';
 
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
+      <ThemeProvider><AuthProvider>
         <CartProvider>
           <ModulesMenuProvider>
             <AppRouter />
           </ModulesMenuProvider>
         </CartProvider>
-      </AuthProvider>
+      </AuthProvider></ThemeProvider>
     </BrowserRouter>
   );
 }
