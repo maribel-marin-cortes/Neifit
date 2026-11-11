@@ -20,6 +20,7 @@ import AdminPage from '../pages/admin/AdminPage';
 import AccessManagement from '../pages/admin/AccessManagement';
 import ProductEditor from '../pages/admin/ProductEditor';
 import MensajeriaPage from '../pages/mensajeria/MensajeriaPage';
+import EmpresasPage from '../pages/EmpresasPage';
 import { useAuth } from '../context/AuthContext';
 
 function ProtectedRoute({ children, requiredRoles }) {
@@ -86,6 +87,7 @@ export default function AppRouter() {
           </ProtectedRoute>
         </LayoutWithNavFooter>
       } />
+      <Route path="/empresas" element={<ProtectedRoute><SiteLayout><EmpresasPage /></SiteLayout></ProtectedRoute>} />
 
       {/* Admin panel */}
       <Route path="/admin/productos/nuevo" element={<ProtectedRoute><SiteLayout><ProductEditor /></SiteLayout></ProtectedRoute>} />

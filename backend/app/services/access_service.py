@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from app.core.config import settings
 from app.core.supabase_headers import service_headers
 from app.core.permissions import ROLE_PERMISSIONS, PERMISSIONS, CUSTOM_ROLE_PERMISSIONS
+from app.core.tenant import current_company_id
 
 
 class AccessService:
@@ -43,7 +44,11 @@ class AccessService:
             allowed = ROLE_PERMISSIONS.get(role, CUSTOM_ROLE_PERMISSIONS)
             granted = await self.permissions_for_role(role) if settings.RBAC_DATABASE_ENABLED else allowed
             roles.append({'role': role, 'name': definition['name'], 'permissions': granted, 'allowed_permissions': allowed})
-        users = await self.request('GET', 'perfiles', params={'select': 'id,full_name:nombre_completo,email:correo,phone:telefono,role:rol', 'order': 'creado_en.desc', 'limit': '100'}) if settings.RBAC_DATABASE_ENABLED else []
+        memberships = await self.request('GET', 'miembros_empresa', params={
+            'empresa_id': 'eq.' + current_company_id(), 'estado': 'eq.activo',
+            'select': 'role:rol,perfiles!inner(id,full_name:nombre_completo,email:correo,phone:telefono)',
+            'limit': '100'}) if settings.RBAC_DATABASE_ENABLED else []
+        users = [{**row['perfiles'], 'role': row['role']} for row in memberships]
         return {'editable': settings.RBAC_DATABASE_ENABLED, 'roles': roles, 'permissions': PERMISSIONS, 'users': users}
 
     async def create_user(self, data, actor_id):
@@ -66,7 +71,8 @@ class AccessService:
                 from uuid import UUID
                 user_id = str(UUID(response.json()['id']))
                 await self.request('POST', 'rpc/neifit_asignar_rol', json={
-                    'p_actor_id': actor_id, 'p_usuario_id': user_id, 'p_rol': data.role})
+                    'p_actor_id': actor_id, 'p_usuario_id': user_id, 'p_rol': data.role,
+                    'p_empresa': current_company_id()})
                 activated = await client.put(base + '/' + user_id, headers=headers, json={'ban_duration': 'none'})
                 activated.raise_for_status()
                 return {'id': user_id, 'email': str(data.email).strip().lower(), 'role': data.role}

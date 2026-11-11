@@ -12,6 +12,16 @@ import { supabase, isSupabaseConfigured } from './supabaseClient';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 let sessionRefresh = null;
 
+function activeCompanySlug() {
+  const requested = typeof window === 'undefined' ? null
+    : new URLSearchParams(window.location.search).get('empresa');
+  if (requested && /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(requested)) {
+    localStorage.setItem('neifit_empresa', requested);
+    return requested;
+  }
+  return localStorage.getItem('neifit_empresa') || 'neifit';
+}
+
 async function renewSession(rejectedToken) {
   if (!sessionRefresh) {
     sessionRefresh = (async () => {
@@ -59,6 +69,7 @@ async function request(endpoint, options = {}) {
     }
     const headers = {
       'Content-Type': 'application/json',
+      'X-Empresa': activeCompanySlug(),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {})
     };
@@ -93,6 +104,9 @@ async function request(endpoint, options = {}) {
 }
 
 export const api = {
+  getCompanies() { return request('/empresas'); },
+  createCompany(data) { return request('/empresas', { method: 'POST', body: JSON.stringify(data) }); },
+  selectCompany(slug) { localStorage.setItem('neifit_empresa', slug); },
   getNotifications() { return request('/notificaciones'); },
   readNotification(id) { return request(`/notificaciones/${id}/leer`, { method: 'PATCH' }); },
   respondQuote(id, data) { return request(`/cotizaciones/${id}/respuesta`, { method: 'POST', body: JSON.stringify(data) }); },

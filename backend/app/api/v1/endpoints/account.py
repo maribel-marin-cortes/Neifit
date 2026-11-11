@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 from app.core.security import require_permission
 from app.core.supabase_rest import supabase_rest as db
+from app.core.tenant import current_company_id
 
 router = APIRouter()
 own_profile = require_permission('profile.read')
@@ -30,7 +31,7 @@ async def get_account(user=Depends(own_profile)):
     rows = await db.rows('perfiles', {'id': 'eq.' + user['id'], 'select': 'id,full_name:nombre_completo,email:correo,phone:telefono'})
     if not rows:
         raise HTTPException(404, 'Perfil no encontrado')
-    addresses = await db.rows('direcciones_cliente', {'usuario_id': 'eq.' + user['id'], 'select': 'id,label:etiqueta,address:direccion,city:ciudad,recipient:destinatario,phone:telefono,notes:notas', 'order': 'creado_en,id'})
+    addresses = await db.rows('direcciones_cliente', {'empresa_id': 'eq.' + current_company_id(), 'usuario_id': 'eq.' + user['id'], 'select': 'id,label:etiqueta,address:direccion,city:ciudad,recipient:destinatario,phone:telefono,notes:notas', 'order': 'creado_en,id'})
     return {**rows[0], 'addresses': addresses}
 
 
@@ -43,7 +44,7 @@ async def update_profile(data: ProfileUpdate, user=Depends(own_profile)):
 @router.post('/direcciones', status_code=201)
 @router.post('/addresses', status_code=201, deprecated=True)
 async def create_address(data: AddressInput, user=Depends(own_profile)):
-    payload = {'usuario_id': user['id'], 'etiqueta': data.label, 'direccion': data.address,
+    payload = {'empresa_id': current_company_id(), 'usuario_id': user['id'], 'etiqueta': data.label, 'direccion': data.address,
                'ciudad': data.city, 'destinatario': data.recipient, 'telefono': data.phone, 'notas': data.notes}
     rows = await db.request('POST', 'direcciones_cliente', data=payload, headers={'Prefer': 'return=representation'})
     return _address_out(rows[0])
@@ -54,7 +55,7 @@ async def create_address(data: AddressInput, user=Depends(own_profile)):
 async def update_address(address_id: UUID, data: AddressInput, user=Depends(own_profile)):
     payload = {'etiqueta': data.label, 'direccion': data.address, 'ciudad': data.city,
                'destinatario': data.recipient, 'telefono': data.phone, 'notas': data.notes}
-    rows = await db.request('PATCH', 'direcciones_cliente', params={'id': 'eq.' + str(address_id), 'usuario_id': 'eq.' + user['id']}, data=payload, headers={'Prefer': 'return=representation'})
+    rows = await db.request('PATCH', 'direcciones_cliente', params={'id': 'eq.' + str(address_id), 'empresa_id': 'eq.' + current_company_id(), 'usuario_id': 'eq.' + user['id']}, data=payload, headers={'Prefer': 'return=representation'})
     if not rows:
         raise HTTPException(404, 'Dirección no encontrada')
     return _address_out(rows[0])
@@ -63,7 +64,7 @@ async def update_address(address_id: UUID, data: AddressInput, user=Depends(own_
 @router.delete('/direcciones/{address_id}')
 @router.delete('/addresses/{address_id}', deprecated=True)
 async def delete_address(address_id: UUID, user=Depends(own_profile)):
-    rows = await db.request('DELETE', 'direcciones_cliente', params={'id': 'eq.' + str(address_id), 'usuario_id': 'eq.' + user['id']}, headers={'Prefer': 'return=representation'})
+    rows = await db.request('DELETE', 'direcciones_cliente', params={'id': 'eq.' + str(address_id), 'empresa_id': 'eq.' + current_company_id(), 'usuario_id': 'eq.' + user['id']}, headers={'Prefer': 'return=representation'})
     if not rows:
         raise HTTPException(404, 'Dirección no encontrada')
     return {'deleted': True}

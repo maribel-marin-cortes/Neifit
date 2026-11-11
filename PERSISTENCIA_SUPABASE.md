@@ -50,6 +50,20 @@ El backend ya utiliza la Data API de Supabase cuando tiene `SUPABASE_URL` y `SUP
 
 No se insertan automáticamente los precios ni existencias de demostración. Los antiguos carritos con identificadores `prod-1`, `cat-1`, etc., se retiran del frontend: vuelve a seleccionar productos del catálogo real. No es posible recuperar pedidos/cotizaciones que ya se perdieron al reiniciar el antiguo servicio de memoria.
 
+## Aislamiento multiempresa
+
+Desde la migración `0011_multiempresa.sql`, cada solicitud de la API incluye el slug de
+la tienda en `X-Empresa` (por defecto `neifit`). El backend resuelve ese slug en
+`empresas`; nunca acepta un UUID empresarial proporcionado directamente por el navegador.
+Cada tienda puede compartirse inicialmente como `/?empresa=slug-de-la-empresa`; el navegador
+conserva la selección y envía el slug en las solicitudes posteriores.
+Los usuarios se relacionan mediante `miembros_empresa` y su rol se evalúa dentro de la
+empresa activa. Las tablas comerciales guardan `empresa_id`, las relaciones de detalle
+usan claves compuestas y las RPC de servidor reciben `p_empresa`.
+
+Para una instalación existente en español ejecuta, en orden, `0010_ajustes_esquema_espanol.sql`
+y `0011_multiempresa.sql`. No vuelvas a ejecutar el instalador completo ni elimines tablas.
+
 ## Qué se guarda
 
 | Servicio | Tablas / comportamiento |

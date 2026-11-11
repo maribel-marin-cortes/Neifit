@@ -5,6 +5,7 @@ from uuid import uuid4
 from fastapi import HTTPException
 from app.core.supabase_rest import supabase_rest as db, uuid_value
 from app.core.permissions import can_read_order, project_order
+from app.core.tenant import current_company_id
 
 
 def slugify(value):
@@ -90,6 +91,7 @@ DOCUMENT_FIELDS = {
 class CommerceRepository:
     async def products(self, category=None, search=None, featured=None, available=None, include_inactive=False):
         params = {'select': 'id,category_id:categoria_id,name:nombre,slug:identificador_url,description:descripcion,ingredients:ingredientes,allergens:alergenos,price:precio,stock:existencias,is_active:activo,is_available:disponible,image_url:url_imagen,featured:destacado,created_at:creado_en,updated_at:actualizado_en,categories:categorias!inner(name:nombre,slug:identificador_url,is_active:activo)', 'order': 'creado_en.desc,id'}
+        params['empresa_id'] = 'eq.' + current_company_id()
         if not include_inactive:
             params.update(activo='eq.true', **{'categorias.activo': 'eq.true'})
         if featured is not None:
@@ -111,6 +113,7 @@ class CommerceRepository:
         except ValueError:
             key, value = 'identificador_url', slug
         params = {'select': 'id,category_id:categoria_id,name:nombre,slug:identificador_url,description:descripcion,ingredients:ingredientes,allergens:alergenos,price:precio,stock:existencias,is_active:activo,is_available:disponible,image_url:url_imagen,featured:destacado,created_at:creado_en,updated_at:actualizado_en,categories:categorias!inner(name:nombre,slug:identificador_url,is_active:activo)', key: 'eq.' + value}
+        params['empresa_id'] = 'eq.' + current_company_id()
         if not include_inactive:
             params.update(activo='eq.true', **{'categorias.activo': 'eq.true'})
         rows = await db.rows('productos', params)
@@ -130,23 +133,24 @@ class CommerceRepository:
             payload.pop('description', None)
         translated = {PRODUCT_INPUT_FIELDS.get(key, key): value for key, value in payload.items()}
         result = await db.rpc('neifit_guardar_producto', p_actor=user['id'], p_datos=translated,
-                              p_id=uuid_value(product_id) if product_id else None)
+                              p_id=uuid_value(product_id) if product_id else None,
+                              p_empresa=current_company_id())
         return normalize_product(_rename(result, PRODUCT_OUTPUT_FIELDS))
 
     async def deactivate_product(self, product_id, user):
         await db.rpc('neifit_guardar_producto', p_actor=user['id'], p_id=uuid_value(product_id),
-                     p_datos={'activo': False, 'disponible': False})
+                     p_datos={'activo': False, 'disponible': False}, p_empresa=current_company_id())
         return True
 
     async def categories(self):
-        return await db.rows('categorias', {'select': 'id,name:nombre,slug:identificador_url,description:descripcion,image:url_imagen,is_active:activo', 'activo': 'eq.true', 'order': 'nombre'})
+        return await db.rows('categorias', {'select': 'id,name:nombre,slug:identificador_url,description:descripcion,image:url_imagen,is_active:activo', 'empresa_id': 'eq.' + current_company_id(), 'activo': 'eq.true', 'order': 'nombre'})
 
     async def create_category(self, data):
         payload = data.model_dump(exclude_none=True)
         payload['slug'] = payload.get('slug') or slugify(payload['name'])
         if not payload['slug']:
             raise HTTPException(status_code=422,detail='Escribe un slug con letras o números')
-        translated = {'nombre': payload['name'], 'identificador_url': payload['slug'],
+        translated = {'empresa_id': current_company_id(), 'nombre': payload['name'], 'identificador_url': payload['slug'],
                       'descripcion': payload.get('description') or '', 'url_imagen': payload.get('image'),
                       'activo': payload.get('is_active', True)}
         rows = await db.request('POST', 'categorias', data=translated, headers={'Prefer': 'return=representation'})
@@ -161,29 +165,33 @@ class CommerceRepository:
         translated['items'] = [{DOCUMENT_FIELDS.get(key, key): value for key, value in item.items()}
                                for item in payload['items']]
         result = await db.rpc('neifit_crear_documento', p_actor=user['id'], p_tipo=kind,
-                              p_solicitud=str(data.request_id or uuid4()), p_datos=translated)
+                              p_solicitud=str(data.request_id or uuid4()), p_datos=translated,
+                              p_empresa=current_company_id())
         return normalize_order(result) if kind == 'order' else normalize_quote(result)
 
     async def orders(self, user, order_id=None, tracking=None):
         rows = await db.rpc('neifit_leer_pedidos', p_actor=user['id'],
-                            p_id=uuid_value(order_id) if order_id else None, p_seguimiento=tracking)
+                            p_id=uuid_value(order_id) if order_id else None, p_seguimiento=tracking,
+                            p_empresa=current_company_id())
         # También proyectar la respuesta: mensajería no recibe importes ni datos de pago.
         rows = [normalize_order(row) for row in rows]
         return [project_order(user, row) for row in rows if can_read_order(user, row)]
 
     async def update_order(self, order_id, data, user):
         row = await db.rpc('neifit_actualizar_pedido', p_actor=user['id'], p_id=uuid_value(order_id),
-                           p_estado=data.status, p_mensaje=data.message or '')
+                           p_estado=data.status, p_mensaje=data.message or '', p_empresa=current_company_id())
         return project_order(user, normalize_order(row))
 
     async def assign_delivery(self, order_id, delivery_id, user):
         row = await db.rpc('neifit_asignar_mensajero', p_actor=user['id'], p_id=uuid_value(order_id),
-                           p_mensajero=uuid_value(delivery_id) if delivery_id else None)
+                           p_mensajero=uuid_value(delivery_id) if delivery_id else None,
+                           p_empresa=current_company_id())
         return normalize_order(row)
 
     async def delivery_users(self):
         # Solo se llama desde un endpoint protegido por orders.manage.
-        profiles = await db.rows('perfiles', {'select': 'id,full_name:nombre_completo,role:rol', 'order': 'nombre_completo'})
+        members = await db.rows('miembros_empresa', {'select': 'id:usuario_id,role:rol,perfiles!inner(full_name:nombre_completo)', 'empresa_id': 'eq.' + current_company_id(), 'estado': 'eq.activo'})
+        profiles = [{'id': row['id'], 'role': row['role'], 'full_name': row['perfiles']['full_name']} for row in members]
         from app.services.access_service import access_service
         permissions = {}
         for role in {row['role'] for row in profiles}:
@@ -191,10 +199,10 @@ class CommerceRepository:
         return [row for row in profiles if 'delivery.read_assigned' in permissions[row['role']]]
 
     async def quotes(self, user):
-        return [normalize_quote(row) for row in await db.rpc('neifit_leer_cotizaciones', p_actor=user['id'])]
+        return [normalize_quote(row) for row in await db.rpc('neifit_leer_cotizaciones', p_actor=user['id'], p_empresa=current_company_id())]
 
     async def update_quote(self, quote_id, status, user):
-        row = await db.rpc('neifit_actualizar_cotizacion', p_actor=user['id'], p_id=uuid_value(quote_id), p_estado=status)
+        row = await db.rpc('neifit_actualizar_cotizacion', p_actor=user['id'], p_id=uuid_value(quote_id), p_estado=status, p_empresa=current_company_id())
         return normalize_quote(row)
 
 

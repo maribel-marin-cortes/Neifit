@@ -1,13 +1,14 @@
 from urllib.parse import urlencode
 from fastapi import HTTPException
 from app.core.supabase_rest import supabase_rest as db, uuid_value
+from app.core.tenant import current_company_id
 
 
 class SiteRepository:
     async def settings(self):
         rows = await db.rows('configuracion_empresa', {
             'select': 'id,business_name:nombre_negocio,phone_public:telefono_publico,whatsapp_number:numero_whatsapp,address:direccion,city:ciudad,opening_hours:horario_atencion,map_url:url_mapa,logo_url:url_logo,shipping_cost:costo_envio,updated_at:actualizado_en',
-            'registro_unico': 'eq.true'})
+            'empresa_id': 'eq.' + current_company_id()})
         if not rows:
             raise HTTPException(status_code=503, detail='Falta la configuración de la empresa')
         result = rows[0]
@@ -37,12 +38,12 @@ class SiteRepository:
                       'whatsapp_number':'numero_whatsapp','address':'direccion','city':'ciudad',
                       'opening_hours':'horario_atencion','map_url':'url_mapa','logo_url':'url_logo',
                       'shipping_cost':'costo_envio'}
-            await db.request('PATCH','configuracion_empresa',params={'registro_unico':'eq.true'},
+            await db.request('PATCH','configuracion_empresa',params={'empresa_id':'eq.' + current_company_id()},
                              data={fields[key]: value for key, value in payload.items()})
         return await self.settings()
 
     async def content(self):
-        rows = await db.rows('contenido_sitio', {'select':'key:clave,body:cuerpo','publicado':'eq.true'})
+        rows = await db.rows('contenido_sitio', {'select':'key:clave,body:cuerpo','empresa_id':'eq.' + current_company_id(),'publicado':'eq.true'})
         return {row['key']: row['body'] for row in rows}
 
     async def update_content(self, data, user):
@@ -51,13 +52,13 @@ class SiteRepository:
         for key, value in data.items():
             if key not in allowed or not isinstance(value,str) or not value.strip() or len(value)>10000:
                 raise HTTPException(status_code=422,detail='Contenido institucional inválido')
-            rows.append({'clave':key,'cuerpo':value.strip(),'publicado':True,'actualizado_por':user['id']})
+            rows.append({'empresa_id':current_company_id(),'clave':key,'cuerpo':value.strip(),'publicado':True,'actualizado_por':user['id']})
         if rows:
-            await db.request('POST','contenido_sitio',params={'on_conflict':'clave'},data=rows,headers={'Prefer':'resolution=merge-duplicates'})
+            await db.request('POST','contenido_sitio',params={'on_conflict':'empresa_id,clave'},data=rows,headers={'Prefer':'resolution=merge-duplicates'})
         return await self.content()
 
     async def values(self):
-        return await db.rows('valores_empresa',{'select':'id,title:titulo,description:descripcion,sort_order:orden,is_published:publicado','publicado':'eq.true','order':'orden,id'})
+        return await db.rows('valores_empresa',{'select':'id,title:titulo,description:descripcion,sort_order:orden,is_published:publicado','empresa_id':'eq.' + current_company_id(),'publicado':'eq.true','order':'orden,id'})
 
     async def update_values(self, data):
         current = await self.values()
@@ -67,7 +68,7 @@ class SiteRepository:
         for row in data:
             if not isinstance(row.get('title'),str) or not row['title'].strip():
                 raise HTTPException(status_code=422,detail='Cada valor requiere un título')
-            rows.append({'id':uuid_value(row['id']),'titulo':row['title'].strip(),'descripcion':row.get('description',''),
+            rows.append({'id':uuid_value(row['id']),'empresa_id':current_company_id(),'titulo':row['title'].strip(),'descripcion':row.get('description',''),
                          'orden':row.get('sort_order',0),'publicado':True})
         await db.request('POST','valores_empresa',params={'on_conflict':'id'},data=rows,headers={'Prefer':'resolution=merge-duplicates'})
         return await self.values()

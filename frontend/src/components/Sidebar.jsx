@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, LayoutGrid, CakeSlice, Nut, CupSoda, ShoppingBag, FileText, MapPin, User, ClipboardList, LayoutDashboard, Package, Truck, LogIn } from 'lucide-react';
+import { Home, LayoutGrid, CakeSlice, Nut, CupSoda, ShoppingBag, FileText, MapPin, User, ClipboardList, LayoutDashboard, Package, Truck, LogIn, Building2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { requiredRoutePermission } from '../services/routePermissions';
@@ -26,7 +26,7 @@ export default function Sidebar({ open }) {
       ...(user && !isMensajeria ? [{ to: '/mis-pedidos', label: 'Mis pedidos', icon: ClipboardList }] : []),
     ] },
     { title: 'Mi cuenta', items: user
-      ? [{ to: '/mi-cuenta', label: 'Mi perfil', icon: User }]
+      ? [{ to: '/mi-cuenta', label: 'Mi perfil', icon: User }, { to: '/empresas', label: 'Mis empresas', icon: Building2 }]
       : [{ to: '/login', label: 'Iniciar sesión', icon: LogIn }] },
   ];
   groups.push({ title: 'Administración', items: [

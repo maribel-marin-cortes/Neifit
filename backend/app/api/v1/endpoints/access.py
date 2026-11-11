@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, SecretStr, field_validator
 from app.core.security import require_permission, require_admin
 from app.core.permissions import ROLE_PERMISSIONS, CUSTOM_ROLE_PERMISSIONS
 from app.services.access_service import access_service
+from app.core.tenant import current_company_id
 
 router = APIRouter()
 Role = Annotated[str, Field(pattern=r'^[a-z][a-z0-9_]{2,39}$')]
@@ -82,5 +83,6 @@ async def assign_role(user_id: UUID, data: RoleAssignment, admin=Depends(require
     if str(user_id) == admin['id']:
         raise HTTPException(status_code=403, detail='No puedes modificar tu propio rol')
     await access_service.request('POST', 'rpc/neifit_asignar_rol', json={
-        'p_usuario_id': str(user_id), 'p_rol': data.role, 'p_actor_id': admin['id']})
+        'p_usuario_id': str(user_id), 'p_rol': data.role, 'p_actor_id': admin['id'],
+        'p_empresa': current_company_id()})
     return {'id': str(user_id), 'role': data.role}

@@ -35,3 +35,24 @@ with psycopg.connect(**connection,autocommit=True) as owner:
             assert c.execute("select count(*) from public.categories").fetchone()[0]==3
             assert c.execute("select public.neifit_read_orders('00000000-0000-0000-0000-000000000000',null,null)").fetchone()[0]==[]
             print('OK instalación '+mode+': 21 tablas, verificación completa y actualización repetida conserva permisos.')
+
+    name='neifit_test_multiempresa_'+uuid4().hex[:10]
+    owner.execute(sql.SQL('create database {}').format(sql.Identifier(name)))
+    with psycopg.connect(**{**connection,'dbname':name},autocommit=True) as c:
+        c.execute(bootstrap)
+        c.execute((ROOT/'supabase/neifit_esquema_completo_espanol.sql').read_text(encoding='utf-8-sig'))
+        c.execute((ROOT/'supabase/migrations/0010_ajustes_esquema_espanol.sql').read_text(encoding='utf-8'))
+        c.execute((ROOT/'supabase/migrations/0011_multiempresa.sql').read_text(encoding='utf-8'))
+        assert c.execute("select count(*) from public.empresas where slug='neifit'").fetchone()[0]==1
+        assert c.execute("select count(*) from public.miembros_empresa").fetchone()[0]==c.execute("select count(*) from public.perfiles").fetchone()[0]
+        assert c.execute("select count(*) from information_schema.columns where table_schema='public' and column_name='empresa_id'").fetchone()[0]>=15
+        second=c.execute("insert into public.empresas(nombre,slug) values('Otra empresa','otra-empresa') returning id").fetchone()[0]
+        c.execute("insert into public.categorias(empresa_id,nombre,identificador_url) values(%s,'Postres','postres')",(second,))
+        assert c.execute("select count(*) from public.categorias where identificador_url='postres'").fetchone()[0]==2
+        neifit_category=c.execute("select id from public.categorias where empresa_id='00000000-0000-0000-0000-000000000001' limit 1").fetchone()[0]
+        try:
+            c.execute("insert into public.productos(empresa_id,categoria_id,nombre,identificador_url,precio) values(%s,%s,'Cruce','cruce',1000)",(second,neifit_category))
+            raise AssertionError('La clave compuesta permitió mezclar empresas')
+        except psycopg.errors.ForeignKeyViolation:
+            pass
+        print('OK instalación multiempresa: datos existentes asignados a Neifit y aislamiento instalado.')

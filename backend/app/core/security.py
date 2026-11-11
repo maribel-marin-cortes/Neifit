@@ -63,6 +63,45 @@ async def load_profile(user_id: str) -> dict:
     return profile
 
 
+async def load_company_membership(user_id: str) -> dict:
+    from app.core.tenant import current_company_id
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get(
+                f"{settings.SUPABASE_URL.rstrip('/')}/rest/v1/miembros_empresa",
+                params={'usuario_id': f'eq.{user_id}', 'empresa_id': f'eq.{current_company_id()}',
+                        'estado': 'eq.activo', 'select': 'role:rol', 'limit': '1'},
+                headers=service_headers(settings.SUPABASE_SERVICE_ROLE_KEY),
+            )
+            response.raise_for_status()
+            rows = response.json()
+    except (httpx.HTTPError, ValueError):
+        raise HTTPException(status_code=503, detail='No se pudo verificar la empresa') from None
+    if isinstance(rows, list) and not rows:
+        # Una identidad autenticada puede entrar como cliente a una tienda pública.
+        # Un registro inactivo no se reactiva: la PK evita reemplazar una suspensión.
+        from app.core.tenant import current_company_id
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                response = await client.post(
+                    f"{settings.SUPABASE_URL.rstrip('/')}/rest/v1/miembros_empresa",
+                    params={'on_conflict': 'empresa_id,usuario_id'},
+                    json={'empresa_id': current_company_id(), 'usuario_id': user_id,
+                          'rol': 'cliente', 'estado': 'activo'},
+                    headers={**service_headers(settings.SUPABASE_SERVICE_ROLE_KEY),
+                             'Prefer': 'resolution=ignore-duplicates,return=representation'},
+                )
+                response.raise_for_status()
+                created = response.json()
+                if created:
+                    rows = [{'role': 'cliente'}]
+        except (httpx.HTTPError, ValueError):
+            raise HTTPException(status_code=503, detail='No se pudo registrar la membresía') from None
+    if not isinstance(rows, list) or len(rows) != 1:
+        raise HTTPException(status_code=403, detail='No perteneces a esta empresa')
+    return rows[0]
+
+
 async def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
 ) -> Optional[dict]:
@@ -94,12 +133,16 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail='No se pudo validar tu sesión. Cierra sesión y vuelve a entrar.',
                             headers={'WWW-Authenticate': 'Bearer', 'X-Auth-Error': 'token_invalid'}) from None
     profile = await load_profile(payload["sub"])
+    membership = await load_company_membership(payload['sub'])
+    profile['role'] = membership['role']
     if settings.RBAC_DATABASE_ENABLED:
         from app.services.access_service import access_service
         permissions = await access_service.permissions_for_role(profile['role'])
     else:
         permissions = list(ROLE_PERMISSIONS[profile['role']])
-    return {**profile, "email": payload.get("email"), 'permissions': permissions}
+    from app.core.tenant import current_company
+    return {**profile, "email": payload.get("email"), 'permissions': permissions,
+            'company': current_company()}
 
 
 async def require_auth(user: Optional[dict] = Depends(get_current_user)) -> dict:

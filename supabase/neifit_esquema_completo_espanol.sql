@@ -1,6 +1,8 @@
 ﻿-- NEIFIT: INSTALADOR COMPLETO PARA UN PROYECTO SUPABASE NUEVO.
 -- Esquema físico completo en español para una base public vacía. No elimina esquemas ni datos automáticamente.
 -- Ejecutar TODO una sola vez en Supabase > SQL Editor.
+-- Después ejecutar, en orden, migrations/0010_ajustes_esquema_espanol.sql y
+-- migrations/0011_multiempresa.sql. El backend actual requiere ambas.
 -- No ejecutar además los archivos originales: ya están incluidos aquí.
 -- No contiene claves, contraseñas ni copias de usuarios/pedidos del proyecto original.
 -- Conserva las categorías y los contenidos institucionales iniciales de Neifit.

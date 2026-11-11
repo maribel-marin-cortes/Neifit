@@ -7,6 +7,11 @@
 > vuelve a desplegar el commit que consulta `perfiles`, `productos`, `pedidos`,
 > `configuracion_empresa` y las RPC `neifit_*` en español.
 
+> **Multiempresa:** después del instalador en español ejecuta una sola vez
+> `supabase/migrations/0010_ajustes_esquema_espanol.sql` y luego
+> `supabase/migrations/0011_multiempresa.sql`. La segunda migración conserva los datos,
+> crea a `neifit` como primera empresa y vuelve obligatorio el aislamiento por empresa.
+
 Estado: código preparado para un piloto; **todavía no publicado ni aprobado para compradores**. No necesitas comprar un dominio: utiliza las URL HTTPS asignadas por Vercel y Render.
 
 ## Cambios de esta etapa
