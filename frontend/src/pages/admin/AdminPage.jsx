@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { requiredRoutePermission } from '../../services/routePermissions';
 import { formatCOP } from '../../components/ProductCard';
+import { adminOrderStatusOptions, orderStatusLabel } from '../../services/orderStatusFlow';
 import {
   Package, Users, ShoppingBag, FileText, Settings,
   Plus, Edit3, Trash2, Check, X, AlertTriangle, Loader2, BarChart2
@@ -21,8 +22,6 @@ const TABS = [
   { key: 'pedidos', label: 'Pedidos', icon: ShoppingBag },
   { key: 'cotizaciones', label: 'Cotizaciones', icon: FileText },
 ];
-
-const STATUS_OPTIONS = ['recibido','confirmado','en_preparacion','empacado','despachado','en_ruta','entregado','novedad','cancelado'];
 
 export default function AdminPage() {
   const { user, hasPermission } = useAuth();
@@ -173,8 +172,8 @@ export default function AdminPage() {
                                 onChange={e => updateOrderStatus(o.id, e.target.value)}
                                 className="text-xs bg-transparent border-0 text-[#7A4E2D] font-semibold cursor-pointer focus:outline-none"
                               >
-                                {STATUS_OPTIONS.map(s => (
-                                  <option key={s} value={s}>{s.replace(/_/g,' ')}</option>
+                                {adminOrderStatusOptions(o.order_status).map(s => (
+                                  <option key={s} value={s}>{orderStatusLabel(s)}</option>
                                 ))}
                               </select>
                             </td>
@@ -277,8 +276,8 @@ export default function AdminPage() {
                             onChange={e => updateOrderStatus(o.id, e.target.value)}
                             className="text-xs border border-[#7A4E2D]/25 rounded-lg px-2 py-1 bg-[#FFF8F2] text-[#4B2E1F] focus:outline-none"
                           >
-                            {STATUS_OPTIONS.map(s => (
-                              <option key={s} value={s}>{s.replace(/_/g,' ')}</option>
+                            {adminOrderStatusOptions(o.order_status).map(s => (
+                              <option key={s} value={s}>{orderStatusLabel(s)}</option>
                             ))}
                           </select>
                         </div>

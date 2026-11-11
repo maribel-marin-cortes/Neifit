@@ -100,13 +100,12 @@ with psycopg.connect(**CONN,autocommit=True) as c:
     assert c.execute('select stock from public.products where id=%s',(pid,)).fetchone()[0]==5
     # Otro pedido recorre la entrega con autorización, estados y trazabilidad.
     delivery=rpc(c,'neifit_create_document',owner,'order',uuid4(),Jsonb(data))
-    check_error(c,'P0002',lambda:rpc(c,'neifit_update_order',courier,delivery['id'],'despachado',''))
+    check_error(c,'P0002',lambda:rpc(c,'neifit_update_order',courier,delivery['id'],'en_ruta',''))
     rpc(c,'neifit_assign_delivery',admin,delivery['id'],courier)
-    for state in ['confirmado','en_preparacion','empacado']:
-        rpc(c,'neifit_update_order',admin,delivery['id'],state,'')
-    for state in ['despachado','en_ruta','entregado']:
+    rpc(c,'neifit_update_order',admin,delivery['id'],'en_preparacion','')
+    for state in ['en_ruta','entregado']:
         result=rpc(c,'neifit_update_order',courier,delivery['id'],state,'')
-    assert result['order_status']=='entregado' and len(result['tracking_history'])==8
+    assert result['order_status']=='entregado' and len(result['tracking_history'])==5
     # Cobro contraentrega: exclusivo del administrador, importe exacto, una sola vez.
     cash_amount=Decimal(str(delivery['total']))
     check_error(c,'42501',lambda:rpc(c,'neifit_confirm_cash',courier,delivery['id'],cash_amount,'REC-001'))

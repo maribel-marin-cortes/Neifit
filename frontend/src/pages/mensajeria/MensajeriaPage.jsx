@@ -4,8 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { formatCOP } from '../../components/ProductCard';
 import { Truck, AlertTriangle, Loader2, Package } from 'lucide-react';
-
-const STATUS_OPTIONS = ['en_preparacion','empacado','despachado','en_ruta','entregado','novedad'];
+import { nextOrderStatus, orderStatusLabel } from '../../services/orderStatusFlow';
 
 export default function MensajeriaPage() {
   const { isMensajeria, isAdmin, user, hasPermission } = useAuth();
@@ -152,13 +151,13 @@ export default function MensajeriaPage() {
                 <div className="border-t border-[#7A4E2D]/15 pt-4">
                   <p className="text-xs font-semibold text-[#7A4E2D]/60 uppercase tracking-wide mb-2">Estado actual: <span className="capitalize font-bold text-[#7A4E2D]">{order.order_status.replace(/_/g,' ')}</span></p>
                   <div className="flex flex-wrap gap-2">
-                    {STATUS_OPTIONS.filter(s => {
-                      if (s === order.order_status) return false;
-                      if (isAdmin) return true;
-                      const permissions = { despachado: 'delivery.start', en_ruta: 'delivery.start', entregado: 'delivery.complete', novedad: 'delivery.issue' };
-                      const from = { despachado: ['empacado'], en_ruta: ['despachado'], entregado: ['en_ruta'], novedad: ['empacado', 'despachado', 'en_ruta'] };
-                      return permissions[s] && hasPermission(permissions[s]) && from[s].includes(order.order_status);
-                    }).map(s => (
+                    {[nextOrderStatus(order.order_status), ...(!['recibido','entregado','cancelado'].includes(order.order_status) ? ['novedad'] : [])]
+                      .filter((s, index, values) => s && values.indexOf(s) === index)
+                      .filter(s => {
+                        if (isAdmin) return true;
+                        const permissions = { en_ruta: 'delivery.start', entregado: 'delivery.complete', novedad: 'delivery.issue' };
+                        return permissions[s] && hasPermission(permissions[s]);
+                      }).map(s => (
                       <button
                         key={s}
                         onClick={() => updateStatus(order.id, s)}
@@ -172,7 +171,7 @@ export default function MensajeriaPage() {
                         }`}
                       >
                         {updatingId === order.id ? <Loader2 className="w-3 h-3 animate-spin inline" /> : null}
-                        {s.replace(/_/g,' ')}
+                        {orderStatusLabel(s)}
                       </button>
                     ))}
                   </div>

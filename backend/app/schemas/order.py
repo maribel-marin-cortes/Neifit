@@ -45,6 +45,7 @@ class OrderStatusUpdate(BaseModel):
     @field_validator("status")
     @classmethod
     def valid_status(cls, v):
+        # Se aceptan estados históricos para poder migrar pedidos anteriores.
         valid = ["recibido","confirmado","en_preparacion","empacado","despachado","en_ruta","entregado","novedad","cancelado"]
         if v not in valid:
             raise ValueError(f"Estado inválido. Opciones: {', '.join(valid)}")

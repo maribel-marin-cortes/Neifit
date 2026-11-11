@@ -26,7 +26,7 @@ ROLE_PERMISSIONS = {
 }
 CUSTOM_ROLE_PERMISSIONS = [code for code in PERMISSIONS if code not in {'access.manage', 'users.manage'}]
 DELIVERY_STATUS_PERMISSIONS = {
-    'despachado': 'delivery.start', 'en_ruta': 'delivery.start',
+    'en_ruta': 'delivery.start',
     'entregado': 'delivery.complete', 'novedad': 'delivery.issue',
 }
 
@@ -54,8 +54,9 @@ def authorize_delivery_update(user: dict, order: dict, status: str):
     if not permission or not has_permission(user, permission):
         raise HTTPException(status_code=403, detail='No tienes permiso para realizar este cambio logístico')
     transitions = {
-        'despachado': {'empacado'}, 'en_ruta': {'despachado'},
-        'entregado': {'en_ruta'}, 'novedad': {'empacado', 'despachado', 'en_ruta'},
+        'en_ruta': {'en_preparacion', 'empacado', 'despachado'},
+        'entregado': {'en_ruta'},
+        'novedad': {'en_preparacion', 'empacado', 'despachado', 'en_ruta'},
     }
     if order.get('order_status') not in transitions[status]:
         raise HTTPException(status_code=409, detail='El estado actual no permite esta transición logística')

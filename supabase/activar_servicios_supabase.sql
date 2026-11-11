@@ -1,6 +1,6 @@
 -- ACTIVAR SERVICIOS EN UNA BASE NEIFIT YA INSTALADA.
 -- Conserva datos y permisos. Ejecutar completo en SQL Editor.
--- Instala 0003/0004 solo si faltan sus tablas y aplica 0005.
+-- Instala 0003/0004 solo si faltan sus tablas y aplica servicios hasta 0008.
 begin;
 do $$ begin
   if to_regclass('public.products') is null or to_regclass('public.orders') is null then
@@ -433,25 +433,25 @@ begin
   if p_status is null or p_status not in ('recibido','confirmado','en_preparacion','empacado','despachado','en_ruta','entregado','novedad','cancelado') then
     raise exception 'Estado inválido' using errcode='22023'; end if;
   if not v_manage then
-    v_permission:=case p_status when 'despachado' then 'delivery.start' when 'en_ruta' then 'delivery.start'
+    v_permission:=case p_status when 'en_ruta' then 'delivery.start'
       when 'entregado' then 'delivery.complete' when 'novedad' then 'delivery.issue' else null end;
     if v_permission is null or not public.neifit_actor_can(p_actor,v_permission) then
       raise exception 'Acción de entrega no permitida' using errcode='42501'; end if;
-    if p_status='novedad' and v_order.order_status not in ('empacado','despachado','en_ruta') then
+    if p_status='novedad' and v_order.order_status not in ('en_preparacion','empacado','despachado','en_ruta') then
       raise exception 'La entrega todavía no permite registrar novedades' using errcode='P0001'; end if;
   end if;
   if v_order.order_status=p_status then return public.neifit_order_json(p_id); end if;
   if v_order.order_status in ('entregado','cancelado') or not (
-    v_order.order_status='recibido' and p_status in ('confirmado','novedad','cancelado')
+    v_order.order_status='recibido' and p_status in ('en_preparacion','novedad','cancelado')
     or v_order.order_status='confirmado' and p_status in ('en_preparacion','novedad','cancelado')
-    or v_order.order_status='en_preparacion' and p_status in ('empacado','novedad','cancelado')
-    or v_order.order_status='empacado' and p_status in ('despachado','novedad','cancelado')
-    or v_order.order_status='despachado' and p_status in ('en_ruta','novedad')
+    or v_order.order_status='en_preparacion' and p_status in ('en_ruta','novedad','cancelado')
+    or v_order.order_status='empacado' and p_status in ('en_ruta','novedad','cancelado')
+    or v_order.order_status='despachado' and p_status in ('en_ruta','novedad','cancelado')
     or v_order.order_status='en_ruta' and p_status in ('entregado','novedad')
-    or v_order.order_status='novedad' and v_manage and p_status in ('confirmado','en_preparacion','empacado','despachado','en_ruta','cancelado')
+    or v_order.order_status='novedad' and v_manage and p_status in ('en_preparacion','en_ruta','cancelado')
   ) then raise exception 'Transición de estado no permitida' using errcode='P0001'; end if;
-  if p_status in ('despachado','en_ruta','entregado') and v_order.assigned_delivery_user_id is null then
-    raise exception 'Asigna un mensajero antes de despachar' using errcode='P0001'; end if;
+  if p_status in ('en_ruta','entregado') and v_order.assigned_delivery_user_id is null then
+    raise exception 'Asigna un mensajero antes de iniciar la ruta' using errcode='P0001'; end if;
   if p_status='cancelado' then
     if v_order.payment_status='aprobado' then raise exception 'Revisar el reembolso antes de cancelar un pedido pagado' using errcode='P0001'; end if;
     if v_order.stock_debited then
