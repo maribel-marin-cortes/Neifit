@@ -23,9 +23,10 @@ export async function finishGoogleSignIn(client) {
   const { data: { session }, error } = await client.auth.getSession();
   if (error) throw error;
   if (!session?.user?.id) throw new Error('No se completó el acceso con Google. Vuelve a intentarlo desde el inicio de sesión.');
-  // El rol proviene de profiles; no se toma de los datos de Google.
-  const { data: profile, error: profileError } = await client.from('profiles')
-    .select('id,full_name,email,phone,role').eq('id', session.user.id).single();
+  // El rol proviene de perfiles; no se toma de los datos de Google.
+  const { data: profile, error: profileError } = await client.from('perfiles')
+    .select('id,full_name:nombre_completo,email:correo,phone:telefono,role:rol')
+    .eq('id', session.user.id).single();
   if (profileError || !profile || profile.id !== session.user.id) {
     throw new Error('Tu cuenta se autenticó, pero no pudimos cargar su perfil. Contacta con Neifit.');
   }

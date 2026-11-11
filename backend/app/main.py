@@ -65,7 +65,7 @@ async def health_check():
 
 @app.get('/ready', tags=['Health'])
 async def readiness_check():
-    await supabase_rest.request('GET', 'notifications', params={'select': 'id', 'limit': '0'})
-    await supabase_rest.request('GET', 'customer_addresses', params={'select': 'id', 'limit': '0'})
+    await supabase_rest.request('GET', 'notificaciones', params={'select': 'id', 'limit': '0'})
+    await supabase_rest.request('GET', 'direcciones_cliente', params={'select': 'id', 'limit': '0'})
     return {'status': 'ready'}
 

@@ -51,12 +51,13 @@ async def configuration(admin=Depends(require_permission('access.manage'))):
     return await access_service.configuration()
 
 
-@router.put('/roles/{role}/permissions', dependencies=[Depends(require_admin)])
+@router.put('/roles/{role}/permisos', dependencies=[Depends(require_admin)])
+@router.put('/roles/{role}/permissions', dependencies=[Depends(require_admin)], deprecated=True)
 async def assign_permissions(role: Role, data: PermissionAssignment, admin=Depends(require_permission('access.manage'))):
     if role == 'admin' or 'profile.read' not in data.permissions or not set(data.permissions).issubset(ROLE_PERMISSIONS.get(role, CUSTOM_ROLE_PERMISSIONS)):
         raise HTTPException(status_code=403, detail='Solo puedes modificar los permisos delegables de cliente y mensajería')
-    await access_service.request('POST', 'rpc/neifit_set_role_permissions', json={
-        'p_role': role, 'p_permissions': sorted(set(data.permissions)), 'p_actor_id': admin['id']})
+    await access_service.request('POST', 'rpc/neifit_establecer_permisos_rol', json={
+        'p_rol': role, 'p_permisos': sorted(set(data.permissions)), 'p_actor_id': admin['id']})
     return {'role': role, 'permissions': sorted(set(data.permissions))}
 
 
@@ -64,20 +65,22 @@ async def assign_permissions(role: Role, data: PermissionAssignment, admin=Depen
 async def create_role(data: NewRole, admin=Depends(require_permission('access.manage'))):
     if data.code in ROLE_PERMISSIONS or 'profile.read' not in data.permissions or not set(data.permissions).issubset(CUSTOM_ROLE_PERMISSIONS):
         raise HTTPException(status_code=403, detail='Nombre reservado o permisos no delegables. Incluye profile.read.')
-    await access_service.request('POST', 'rpc/neifit_create_role', json={
-        'p_actor_id': admin['id'], 'p_code': data.code, 'p_name': data.name.strip(), 'p_permissions': sorted(set(data.permissions))})
+    await access_service.request('POST', 'rpc/neifit_crear_rol', json={
+        'p_actor_id': admin['id'], 'p_codigo': data.code, 'p_nombre': data.name.strip(), 'p_permisos': sorted(set(data.permissions))})
     return {'role': data.code, 'name': data.name.strip()}
 
 
-@router.post('/users', status_code=201, dependencies=[Depends(require_admin)])
+@router.post('/usuarios', status_code=201, dependencies=[Depends(require_admin)])
+@router.post('/users', status_code=201, dependencies=[Depends(require_admin)], deprecated=True)
 async def create_user(data: NewUser, admin=Depends(require_permission('users.manage'))):
     return await access_service.create_user(data, admin['id'])
 
 
-@router.patch('/users/{user_id}/role', dependencies=[Depends(require_admin)])
+@router.patch('/usuarios/{user_id}/rol', dependencies=[Depends(require_admin)])
+@router.patch('/users/{user_id}/role', dependencies=[Depends(require_admin)], deprecated=True)
 async def assign_role(user_id: UUID, data: RoleAssignment, admin=Depends(require_permission('access.manage'))):
     if str(user_id) == admin['id']:
         raise HTTPException(status_code=403, detail='No puedes modificar tu propio rol')
-    await access_service.request('POST', 'rpc/neifit_assign_role', json={
-        'p_user_id': str(user_id), 'p_role': data.role, 'p_actor_id': admin['id']})
+    await access_service.request('POST', 'rpc/neifit_asignar_rol', json={
+        'p_usuario_id': str(user_id), 'p_rol': data.role, 'p_actor_id': admin['id']})
     return {'id': str(user_id), 'role': data.role}

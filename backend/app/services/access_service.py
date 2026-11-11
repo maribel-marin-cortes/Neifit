@@ -29,26 +29,26 @@ class AccessService:
     async def permissions_for_role(self, role):
         if role == 'admin':
             return list(ROLE_PERMISSIONS['admin'])
-        rows = await self.request('GET', 'role_permissions', params={'role': 'eq.' + role, 'select': 'permission_code'})
+        rows = await self.request('GET', 'permisos_rol', params={'rol': 'eq.' + role, 'select': 'permission_code:codigo_permiso'})
         if not isinstance(rows, list):
             raise HTTPException(status_code=503, detail='No se pudieron verificar permisos')
         return [row['permission_code'] for row in rows if row.get('permission_code') in ROLE_PERMISSIONS.get(role, CUSTOM_ROLE_PERMISSIONS)]
 
     async def configuration(self):
         roles = []
-        definitions = await self.request('GET', 'access_roles', params={'select': 'code,name', 'order': 'name'}) if settings.RBAC_DATABASE_ENABLED else [
+        definitions = await self.request('GET', 'roles_acceso', params={'select': 'code:codigo,name:nombre', 'order': 'nombre'}) if settings.RBAC_DATABASE_ENABLED else [
             {'code': code, 'name': name} for code, name in [('admin', 'Administrador'), ('cliente', 'Cliente'), ('mensajeria', 'Mensajero / domiciliario')]]
         for definition in definitions:
             role = definition['code']
             allowed = ROLE_PERMISSIONS.get(role, CUSTOM_ROLE_PERMISSIONS)
             granted = await self.permissions_for_role(role) if settings.RBAC_DATABASE_ENABLED else allowed
             roles.append({'role': role, 'name': definition['name'], 'permissions': granted, 'allowed_permissions': allowed})
-        users = await self.request('GET', 'profiles', params={'select': 'id,full_name,email,phone,role', 'order': 'created_at.desc', 'limit': '100'}) if settings.RBAC_DATABASE_ENABLED else []
+        users = await self.request('GET', 'perfiles', params={'select': 'id,full_name:nombre_completo,email:correo,phone:telefono,role:rol', 'order': 'creado_en.desc', 'limit': '100'}) if settings.RBAC_DATABASE_ENABLED else []
         return {'editable': settings.RBAC_DATABASE_ENABLED, 'roles': roles, 'permissions': PERMISSIONS, 'users': users}
 
     async def create_user(self, data, actor_id):
         # Comprobar migración y rol antes de crear una identidad en Auth.
-        roles = await self.request('GET', 'access_roles', params={'code': 'eq.' + data.role, 'select': 'code'})
+        roles = await self.request('GET', 'roles_acceso', params={'codigo': 'eq.' + data.role, 'select': 'code:codigo'})
         if not roles:
             raise HTTPException(status_code=422, detail='El rol seleccionado no existe')
         headers = service_headers(settings.SUPABASE_SERVICE_ROLE_KEY)
@@ -65,8 +65,8 @@ class AccessService:
                 response.raise_for_status()
                 from uuid import UUID
                 user_id = str(UUID(response.json()['id']))
-                await self.request('POST', 'rpc/neifit_assign_role', json={
-                    'p_actor_id': actor_id, 'p_user_id': user_id, 'p_role': data.role})
+                await self.request('POST', 'rpc/neifit_asignar_rol', json={
+                    'p_actor_id': actor_id, 'p_usuario_id': user_id, 'p_rol': data.role})
                 activated = await client.put(base + '/' + user_id, headers=headers, json={'ban_duration': 'none'})
                 activated.raise_for_status()
                 return {'id': user_id, 'email': str(data.email).strip().lower(), 'role': data.role}

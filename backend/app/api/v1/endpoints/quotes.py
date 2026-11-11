@@ -22,7 +22,8 @@ async def create_quote(data: QuoteCreate, user=Depends(require_permission('quote
     return await service.create(data, user)
 
 
-@router.patch('/{quote_id}/status', response_model=QuoteOut)
+@router.patch('/{quote_id}/estado', response_model=QuoteOut)
+@router.patch('/{quote_id}/status', response_model=QuoteOut, deprecated=True)
 async def update_quote(quote_id: UUID, data: QuoteStatusUpdate, user=Depends(require_permission('quotes.manage'))):
     return await commerce.update_quote(str(quote_id), data.status, user)
 

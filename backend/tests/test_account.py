@@ -27,12 +27,12 @@ class AccountSecurityTests(unittest.TestCase):
         request.return_value = []
         response = self.client.delete('/account/addresses/' + ADDRESS)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(request.call_args.kwargs['params'], {'id': 'eq.' + ADDRESS, 'user_id': 'eq.' + OWNER})
+        self.assertEqual(request.call_args.kwargs['params'], {'id': 'eq.' + ADDRESS, 'usuario_id': 'eq.' + OWNER})
 
     @patch('app.api.v1.endpoints.account.db.request', new_callable=AsyncMock)
     def test_create_uses_authenticated_owner(self, request):
         data = {'label': 'Casa', 'recipient': 'Nombre cliente', 'phone': '3000000000', 'address': 'Calle 10 # 20-30', 'city': 'Medellín', 'notes': ''}
         request.return_value = [{**data, 'id': ADDRESS}]
         self.assertEqual(self.client.post('/account/addresses', json=data).status_code, 201)
-        self.assertEqual(request.call_args.kwargs['data']['user_id'], OWNER)
+        self.assertEqual(request.call_args.kwargs['data']['usuario_id'], OWNER)
         self.assertEqual(self.client.post('/account/addresses', json={**data, 'user_id': ADDRESS}).status_code, 422)

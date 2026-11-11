@@ -90,23 +90,23 @@ class CommerceRepository:
                             p_request=str(data.request_id or uuid4()), p_data=payload)
 
     async def orders(self, user, order_id=None, tracking=None):
-        rows = await db.rpc('neifit_read_orders', p_actor=user['id'],
-                            p_id=uuid_value(order_id) if order_id else None, p_tracking=tracking)
+        rows = await db.rpc('neifit_leer_pedidos', p_actor=user['id'],
+                            p_id=uuid_value(order_id) if order_id else None, p_seguimiento=tracking)
         # También proyectar la respuesta: mensajería no recibe importes ni datos de pago.
         return [project_order(user, row) for row in rows if can_read_order(user, row)]
 
     async def update_order(self, order_id, data, user):
-        row = await db.rpc('neifit_update_order', p_actor=user['id'], p_id=uuid_value(order_id),
-                           p_status=data.status, p_message=data.message or '')
+        row = await db.rpc('neifit_actualizar_pedido', p_actor=user['id'], p_id=uuid_value(order_id),
+                           p_estado=data.status, p_mensaje=data.message or '')
         return project_order(user, row)
 
     async def assign_delivery(self, order_id, delivery_id, user):
-        return await db.rpc('neifit_assign_delivery', p_actor=user['id'], p_id=uuid_value(order_id),
-                            p_delivery=uuid_value(delivery_id) if delivery_id else None)
+        return await db.rpc('neifit_asignar_mensajero', p_actor=user['id'], p_id=uuid_value(order_id),
+                            p_mensajero=uuid_value(delivery_id) if delivery_id else None)
 
     async def delivery_users(self):
         # Solo se llama desde un endpoint protegido por orders.manage.
-        profiles = await db.rows('profiles', {'select': 'id,full_name,role', 'order': 'full_name'})
+        profiles = await db.rows('perfiles', {'select': 'id,full_name:nombre_completo,role:rol', 'order': 'nombre_completo'})
         from app.services.access_service import access_service
         permissions = {}
         for role in {row['role'] for row in profiles}:
@@ -114,10 +114,10 @@ class CommerceRepository:
         return [row for row in profiles if 'delivery.read_assigned' in permissions[row['role']]]
 
     async def quotes(self, user):
-        return await db.rpc('neifit_read_quotes', p_actor=user['id'])
+        return await db.rpc('neifit_leer_cotizaciones', p_actor=user['id'])
 
     async def update_quote(self, quote_id, status, user):
-        return await db.rpc('neifit_update_quote', p_actor=user['id'], p_id=uuid_value(quote_id), p_status=status)
+        return await db.rpc('neifit_actualizar_cotizacion', p_actor=user['id'], p_id=uuid_value(quote_id), p_estado=status)
 
 
 commerce = CommerceRepository()

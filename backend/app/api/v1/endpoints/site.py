@@ -10,13 +10,15 @@ from app.services.site_repository import site_repository
 router = APIRouter()
 
 
-@router.get('/featured-products', response_model=list[ProductPreview])
+@router.get('/productos-destacados', response_model=list[ProductPreview])
+@router.get('/featured-products', response_model=list[ProductPreview], deprecated=True)
 async def featured_products():
     """Solo la muestra de portada, sin cantidades de inventario ni datos privados."""
     return (await ProductService().list_products(featured=True))[:3]
 
 
-@router.get('/categories', response_model=list[CategoryOut])
+@router.get('/categorias', response_model=list[CategoryOut])
+@router.get('/categories', response_model=list[CategoryOut], deprecated=True)
 async def landing_categories():
     return await CategoryService().list_active()
 
@@ -53,7 +55,8 @@ _VALUES = [
 ]
 
 
-@router.get("/settings")
+@router.get("/configuracion")
+@router.get("/settings", deprecated=True)
 async def get_settings():
     """Configuración pública del negocio (contacto, horarios)."""
     if database_enabled():
@@ -61,7 +64,8 @@ async def get_settings():
     return {**_SETTINGS, 'shipping_cost': 5000}
 
 
-@router.put("/settings")
+@router.put("/configuracion")
+@router.put("/settings", deprecated=True)
 async def update_settings(data: dict, admin=Depends(require_permission('content.manage'))):
     """Actualizar configuración. Solo administradores."""
     # En producción esto persiste en Supabase tabla company_settings
@@ -71,13 +75,15 @@ async def update_settings(data: dict, admin=Depends(require_permission('content.
     return _SETTINGS
 
 
-@router.get("/content")
+@router.get("/contenido")
+@router.get("/content", deprecated=True)
 async def get_content():
     """Contenido institucional publicado (misión, visión, quiénes somos)."""
     return await site_repository.content() if database_enabled() else _CONTENT
 
 
-@router.put("/content")
+@router.put("/contenido")
+@router.put("/content", deprecated=True)
 async def update_content(data: dict, admin=Depends(require_permission('content.manage'))):
     """Actualizar contenido institucional. Solo administradores."""
     # En producción persiste en Supabase tabla site_content
@@ -87,13 +93,15 @@ async def update_content(data: dict, admin=Depends(require_permission('content.m
     return _CONTENT
 
 
-@router.get("/values")
+@router.get("/valores")
+@router.get("/values", deprecated=True)
 async def get_values():
     """Valores corporativos publicados."""
     return await site_repository.values() if database_enabled() else _VALUES
 
 
-@router.put("/values")
+@router.put("/valores")
+@router.put("/values", deprecated=True)
 async def update_values(data: list, admin=Depends(require_permission('content.manage'))):
     """Actualizar valores. Solo administradores."""
     global _VALUES

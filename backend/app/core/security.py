@@ -1,4 +1,4 @@
-"""JWT de Supabase y permisos consultados en profiles."""
+"""JWT de Supabase y permisos consultados en la vista ``perfiles``."""
 from functools import lru_cache
 from typing import Optional
 from uuid import UUID
@@ -44,8 +44,8 @@ async def load_profile(user_id: str) -> dict:
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             response = await client.get(
-                f"{settings.SUPABASE_URL.rstrip('/')}/rest/v1/profiles",
-                params={"id": f"eq.{user_id}", "select": "id,role,full_name,phone", "limit": "1"},
+                f"{settings.SUPABASE_URL.rstrip('/')}/rest/v1/perfiles",
+                params={"id": f"eq.{user_id}", "select": "id,role:rol,full_name:nombre_completo,phone:telefono", "limit": "1"},
                 headers=service_headers(settings.SUPABASE_SERVICE_ROLE_KEY),
             )
             response.raise_for_status()

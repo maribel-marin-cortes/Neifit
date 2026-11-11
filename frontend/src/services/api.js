@@ -93,37 +93,37 @@ async function request(endpoint, options = {}) {
 }
 
 export const api = {
-  getNotifications() { return request('/notifications'); },
-  readNotification(id) { return request(`/notifications/${id}/read`, { method: 'PATCH' }); },
-  respondQuote(id, data) { return request(`/quotes/${id}/response`, { method: 'POST', body: JSON.stringify(data) }); },
-  confirmCash(id, data) { return request(`/orders/${id}/cash-receipt`, { method: 'POST', body: JSON.stringify(data) }); },
-  getAccount() { return request('/account'); },
-  updateAccount(data) { return request('/account', { method: 'PATCH', body: JSON.stringify(data) }); },
-  saveAddress(data, id) { return request('/account/addresses' + (id ? '/' + id : ''), { method: id ? 'PUT' : 'POST', body: JSON.stringify(data) }); },
-  deleteAddress(id) { return request('/account/addresses/' + id, { method: 'DELETE' }); },
-  createCategory(data) { return request('/categories/', { method: 'POST', body: JSON.stringify(data) }); },
-  getDeliveryUsers() { return request('/orders/delivery-users'); },
-  assignDelivery(orderId, userId) { return request(`/orders/${orderId}/delivery`, { method: 'PATCH', body: JSON.stringify({ user_id: userId || null }) }); },
-  updateQuoteStatus(quoteId, status) { return request(`/quotes/${quoteId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }); },
-  createRole(data) { return request('/access/roles', { method: 'POST', body: JSON.stringify(data) }); },
-  createUser(data) { return request('/access/users', { method: 'POST', body: JSON.stringify(data) }); },
-  getCurrentUser() { return request('/auth/me'); },
-  getAccessConfiguration() { return request('/access/'); },
+  getNotifications() { return request('/notificaciones'); },
+  readNotification(id) { return request(`/notificaciones/${id}/leer`, { method: 'PATCH' }); },
+  respondQuote(id, data) { return request(`/cotizaciones/${id}/respuesta`, { method: 'POST', body: JSON.stringify(data) }); },
+  confirmCash(id, data) { return request(`/pedidos/${id}/recibo-efectivo`, { method: 'POST', body: JSON.stringify(data) }); },
+  getAccount() { return request('/cuenta'); },
+  updateAccount(data) { return request('/cuenta', { method: 'PATCH', body: JSON.stringify(data) }); },
+  saveAddress(data, id) { return request('/cuenta/direcciones' + (id ? '/' + id : ''), { method: id ? 'PUT' : 'POST', body: JSON.stringify(data) }); },
+  deleteAddress(id) { return request('/cuenta/direcciones/' + id, { method: 'DELETE' }); },
+  createCategory(data) { return request('/categorias/', { method: 'POST', body: JSON.stringify(data) }); },
+  getDeliveryUsers() { return request('/pedidos/mensajeros'); },
+  assignDelivery(orderId, userId) { return request(`/pedidos/${orderId}/mensajero`, { method: 'PATCH', body: JSON.stringify({ user_id: userId || null }) }); },
+  updateQuoteStatus(quoteId, status) { return request(`/cotizaciones/${quoteId}/estado`, { method: 'PATCH', body: JSON.stringify({ status }) }); },
+  createRole(data) { return request('/accesos/roles', { method: 'POST', body: JSON.stringify(data) }); },
+  createUser(data) { return request('/accesos/usuarios', { method: 'POST', body: JSON.stringify(data) }); },
+  getCurrentUser() { return request('/autenticacion/yo'); },
+  getAccessConfiguration() { return request('/accesos/'); },
   updateRolePermissions(role, permissions) {
-    return request(`/access/roles/${role}/permissions`, { method: 'PUT', body: JSON.stringify({ permissions }) });
+    return request(`/accesos/roles/${role}/permisos`, { method: 'PUT', body: JSON.stringify({ permissions }) });
   },
   assignUserRole(id, role) {
-    return request(`/access/users/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role }) });
+    return request(`/accesos/usuarios/${id}/rol`, { method: 'PATCH', body: JSON.stringify({ role }) });
   },
   async getLandingProducts() {
-    try { return await request('/site/featured-products'); }
+    try { return await request('/sitio/productos-destacados'); }
     catch (error) {
       if (isSupabaseConfigured) throw error;
       return initialProducts.filter(p => p.featured).slice(0, 3);
     }
   },
   async getLandingCategories() {
-    try { return await request('/site/categories'); }
+    try { return await request('/sitio/categorias'); }
     catch (error) {
       if (isSupabaseConfigured) throw error;
       return initialCategories;
@@ -132,7 +132,7 @@ export const api = {
   // Public & Site Settings
   async getCompanySettings() {
     try {
-      return await request('/site/settings');
+      return await request('/sitio/configuracion');
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       return getStored('settings', initialCompanySettings);
@@ -141,7 +141,7 @@ export const api = {
 
   async updateCompanySettings(data) {
     try {
-      const res = await request('/site/settings', {
+      const res = await request('/sitio/configuracion', {
         method: 'PUT',
         body: JSON.stringify(data)
       });
@@ -158,7 +158,7 @@ export const api = {
 
   async getSiteContent() {
     try {
-      return await request('/site/content');
+      return await request('/sitio/contenido');
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       return getStored('site_content', initialSiteContent);
@@ -167,7 +167,7 @@ export const api = {
 
   async updateSiteContent(data) {
     try {
-      const res = await request('/site/content', {
+      const res = await request('/sitio/contenido', {
         method: 'PUT',
         body: JSON.stringify(data)
       });
@@ -184,7 +184,7 @@ export const api = {
 
   async getCompanyValues() {
     try {
-      return await request('/site/values');
+      return await request('/sitio/valores');
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       return getStored('company_values', initialCompanyValues);
@@ -193,7 +193,7 @@ export const api = {
 
   async updateCompanyValues(values) {
     try {
-      const res = await request('/site/values', {
+      const res = await request('/sitio/valores', {
         method: 'PUT',
         body: JSON.stringify(values)
       });
@@ -209,7 +209,7 @@ export const api = {
   // Categories & Products
   async getCategories() {
     try {
-      return await request('/categories');
+      return await request('/categorias');
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       return getStored('categories', initialCategories);
@@ -225,7 +225,7 @@ export const api = {
         if (typeof params[key] === 'boolean') searchParams.set(key, String(params[key]));
       }
       const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
-      return await request(`/products${query}`);
+      return await request(`/productos${query}`);
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       let list = getStored('products', initialProducts);
@@ -242,7 +242,7 @@ export const api = {
 
   async getProductBySlug(slug) {
     try {
-      return await request(`/products/${encodeURIComponent(slug)}`);
+      return await request(`/productos/${encodeURIComponent(slug)}`);
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       const list = getStored('products', initialProducts);
@@ -254,7 +254,7 @@ export const api = {
 
   async createProduct(productData) {
     try {
-      const res = await request('/products', {
+      const res = await request('/productos', {
         method: 'POST',
         body: JSON.stringify(productData)
       });
@@ -276,7 +276,7 @@ export const api = {
 
   async updateProduct(id, productData) {
     try {
-      return await request(`/products/${id}`, {
+      return await request(`/productos/${id}`, {
         method: 'PUT',
         body: JSON.stringify(productData)
       });
@@ -291,7 +291,7 @@ export const api = {
 
   async deleteProduct(id) {
     try {
-      return await request(`/products/${id}`, { method: 'DELETE' });
+      return await request(`/productos/${id}`, { method: 'DELETE' });
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       const list = getStored('products', initialProducts);
@@ -304,7 +304,7 @@ export const api = {
   // Orders & Tracking
   async createOrder(orderPayload) {
     try {
-      return await request('/orders', {
+      return await request('/pedidos', {
         method: 'POST',
         body: JSON.stringify(orderPayload)
       });
@@ -344,7 +344,7 @@ export const api = {
 
   async getOrders(roleFilter = {}) {
     try {
-      return await request('/orders');
+      return await request('/pedidos');
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       let orders = getStored('orders', initialOrders);
@@ -357,7 +357,7 @@ export const api = {
 
   async getOrderByTrackingCode(code) {
     try {
-      return await request(`/tracking/${encodeURIComponent(code.trim())}`);
+      return await request(`/seguimiento/${encodeURIComponent(code.trim())}`);
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       const orders = getStored('orders', initialOrders);
@@ -370,7 +370,7 @@ export const api = {
 
   async updateOrderStatus(orderId, newStatus, message, novelties = null) {
     try {
-      return await request(`/orders/${orderId}/status`, {
+      return await request(`/pedidos/${orderId}/estado`, {
         method: 'PATCH',
         body: JSON.stringify({ status: newStatus, message, novelties })
       });
@@ -399,7 +399,7 @@ export const api = {
   // Quotes (Cotizador)
   async createQuote(quoteData) {
     try {
-      return await request('/quotes', {
+      return await request('/cotizaciones', {
         method: 'POST',
         body: JSON.stringify(quoteData)
       });
@@ -422,7 +422,7 @@ export const api = {
 
   async getQuotes() {
     try {
-      return await request('/quotes');
+      return await request('/cotizaciones');
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       return getStored('quotes', initialQuotes);

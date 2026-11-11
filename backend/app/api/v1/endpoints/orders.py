@@ -12,12 +12,14 @@ router = APIRouter()
 service = order_service
 
 
-@router.get('/delivery-users')
+@router.get('/mensajeros')
+@router.get('/delivery-users', deprecated=True)
 async def delivery_users(user=Depends(require_permission('orders.manage'))):
     return await commerce.delivery_users()
 
 
-@router.patch('/{order_id}/delivery')
+@router.patch('/{order_id}/mensajero')
+@router.patch('/{order_id}/delivery', deprecated=True)
 async def assign_delivery(order_id: UUID, data: DeliveryAssignment, user=Depends(require_permission('orders.manage'))):
     return await commerce.assign_delivery(str(order_id), str(data.user_id) if data.user_id else None, user)
 
@@ -54,7 +56,8 @@ async def get_order(order_id: str, user=Depends(require_permission('orders.read_
     return order
 
 
-@router.patch("/{order_id}/status")
+@router.patch("/{order_id}/estado")
+@router.patch("/{order_id}/status", deprecated=True)
 async def update_order_status(
     order_id: str,
     data: OrderStatusUpdate,

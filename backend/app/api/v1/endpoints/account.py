@@ -27,36 +27,54 @@ class AddressInput(BaseModel):
 
 @router.get('')
 async def get_account(user=Depends(own_profile)):
-    rows = await db.rows('profiles', {'id': 'eq.' + user['id'], 'select': 'id,full_name,email,phone'})
+    rows = await db.rows('perfiles', {'id': 'eq.' + user['id'], 'select': 'id,full_name:nombre_completo,email:correo,phone:telefono'})
     if not rows:
         raise HTTPException(404, 'Perfil no encontrado')
-    addresses = await db.rows('customer_addresses', {'user_id': 'eq.' + user['id'], 'select': 'id,label,address,city,recipient,phone,notes', 'order': 'created_at,id'})
+    addresses = await db.rows('direcciones_cliente', {'usuario_id': 'eq.' + user['id'], 'select': 'id,label:etiqueta,address:direccion,city:ciudad,recipient:destinatario,phone:telefono,notes:notas', 'order': 'creado_en,id'})
     return {**rows[0], 'addresses': addresses}
 
 
 @router.patch('')
 async def update_profile(data: ProfileUpdate, user=Depends(own_profile)):
-    await db.request('PATCH', 'profiles', params={'id': 'eq.' + user['id']}, data=data.model_dump())
+    await db.request('PATCH', 'perfiles', params={'id': 'eq.' + user['id']}, data={'nombre_completo': data.full_name, 'telefono': data.phone})
     return await get_account(user)
 
 
-@router.post('/addresses', status_code=201)
+@router.post('/direcciones', status_code=201)
+@router.post('/addresses', status_code=201, deprecated=True)
 async def create_address(data: AddressInput, user=Depends(own_profile)):
-    rows = await db.request('POST', 'customer_addresses', data={**data.model_dump(), 'user_id': user['id']}, headers={'Prefer': 'return=representation'})
-    return rows[0]
+    payload = {'usuario_id': user['id'], 'etiqueta': data.label, 'direccion': data.address,
+               'ciudad': data.city, 'destinatario': data.recipient, 'telefono': data.phone, 'notas': data.notes}
+    rows = await db.request('POST', 'direcciones_cliente', data=payload, headers={'Prefer': 'return=representation'})
+    return _address_out(rows[0])
 
 
-@router.put('/addresses/{address_id}')
+@router.put('/direcciones/{address_id}')
+@router.put('/addresses/{address_id}', deprecated=True)
 async def update_address(address_id: UUID, data: AddressInput, user=Depends(own_profile)):
-    rows = await db.request('PATCH', 'customer_addresses', params={'id': 'eq.' + str(address_id), 'user_id': 'eq.' + user['id']}, data=data.model_dump(), headers={'Prefer': 'return=representation'})
+    payload = {'etiqueta': data.label, 'direccion': data.address, 'ciudad': data.city,
+               'destinatario': data.recipient, 'telefono': data.phone, 'notas': data.notes}
+    rows = await db.request('PATCH', 'direcciones_cliente', params={'id': 'eq.' + str(address_id), 'usuario_id': 'eq.' + user['id']}, data=payload, headers={'Prefer': 'return=representation'})
     if not rows:
         raise HTTPException(404, 'Dirección no encontrada')
-    return rows[0]
+    return _address_out(rows[0])
 
 
-@router.delete('/addresses/{address_id}')
+@router.delete('/direcciones/{address_id}')
+@router.delete('/addresses/{address_id}', deprecated=True)
 async def delete_address(address_id: UUID, user=Depends(own_profile)):
-    rows = await db.request('DELETE', 'customer_addresses', params={'id': 'eq.' + str(address_id), 'user_id': 'eq.' + user['id']}, headers={'Prefer': 'return=representation'})
+    rows = await db.request('DELETE', 'direcciones_cliente', params={'id': 'eq.' + str(address_id), 'usuario_id': 'eq.' + user['id']}, headers={'Prefer': 'return=representation'})
     if not rows:
         raise HTTPException(404, 'Dirección no encontrada')
     return {'deleted': True}
+
+
+def _address_out(row):
+    return {
+        'id': row['id'], 'label': row.get('etiqueta', row.get('label')),
+        'address': row.get('direccion', row.get('address')),
+        'city': row.get('ciudad', row.get('city')),
+        'recipient': row.get('destinatario', row.get('recipient')),
+        'phone': row.get('telefono', row.get('phone')),
+        'notes': row.get('notas', row.get('notes', '')),
+    }

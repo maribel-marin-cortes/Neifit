@@ -26,7 +26,7 @@ test('el callback consulta el perfil del usuario y no acepta roles de metadatos'
   const client = {
     auth: { getSession: async () => ({ data: { session: { user: { id: 'google-user', user_metadata: { role: 'admin' } } } }, error: null }) },
     from(table) {
-      assert.equal(table, 'profiles');
+      assert.equal(table, 'perfiles');
       return { select: () => ({ eq: (_, id) => {
         selectedId = id;
         return { single: async () => ({ data: { id: 'google-user', role: 'cliente' }, error: null }) };
