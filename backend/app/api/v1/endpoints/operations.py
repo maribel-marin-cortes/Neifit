@@ -54,22 +54,22 @@ async def create_delivery_request(data: DeliveryRequestCreate):
 
 
 @router.get('/solicitudes-mensajeria')
-async def list_delivery_requests(user=Depends(require_admin)):
+async def list_delivery_requests(user=Depends(require_permission('users.manage'))):
     """Lista las solicitudes de mensajeros para revisión del administrador."""
     return await delivery_service.list_requests()
 
 
 @router.post('/solicitudes-mensajeria/{request_id}/aprobar')
-async def approve_delivery_request(request_id: str, user=Depends(require_admin)):
+async def approve_delivery_request(request_id: UUID, user=Depends(require_permission('users.manage'))):
     """El administrador aprueba la solicitud y activa al mensajero."""
-    return await delivery_service.approve_request(request_id, user)
+    return await delivery_service.approve_request(str(request_id), user)
 
 
 @router.post('/solicitudes-mensajeria/{request_id}/rechazar')
-async def reject_delivery_request(request_id: str, data: Optional[DeliveryRequestReview] = None, user=Depends(require_admin)):
+async def reject_delivery_request(request_id: UUID, data: Optional[DeliveryRequestReview] = None, user=Depends(require_permission('users.manage'))):
     """El administrador rechaza la solicitud."""
     reason = data.reason if data else "Rechazado por el administrador"
-    return await delivery_service.reject_request(request_id, reason, user)
+    return await delivery_service.reject_request(str(request_id), reason, user)
 
 
 @router.post('/cotizaciones/{quote_id}/respuesta')

@@ -69,5 +69,7 @@ async def readiness_check():
     await supabase_rest.request('GET', 'miembros_empresa', params={'select': 'empresa_id', 'limit': '0'})
     await supabase_rest.request('GET', 'notificaciones', params={'select': 'id', 'limit': '0'})
     await supabase_rest.request('GET', 'direcciones_cliente', params={'select': 'id', 'limit': '0'})
+    await supabase_rest.request('GET', 'solicitudes_mensajeria',
+                                params={'select': 'id,usuario_id,notas', 'limit': '0'})
     return {'status': 'ready'}
 

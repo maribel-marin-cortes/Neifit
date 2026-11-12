@@ -9,9 +9,11 @@
 
 > **Multiempresa:** después del instalador en español ejecuta una sola vez
 > `supabase/migrations/0010_ajustes_esquema_espanol.sql` y luego
-> `supabase/migrations/0011_multiempresa.sql`, `0012_datos_demo_multiempresa.sql` y
-> `0013_temas_aislamiento_multiempresa.sql`. Conservan los datos, crean a `neifit` como
-> primera empresa, aíslan roles y permisos y habilitan apariencia y Storage por empresa.
+> `supabase/migrations/0011_multiempresa.sql`, `0012_datos_demo_multiempresa.sql`,
+> `0013_temas_aislamiento_multiempresa.sql`, `0014_solicitudes_mensajeria.sql` y
+> `0015_aprobacion_mensajeria_segura.sql`. Conservan los datos, crean a `neifit` como
+> primera empresa, aíslan roles y permisos, habilitan apariencia y completan el alta
+> de mensajeros bajo aprobación administrativa.
 
 Estado: código preparado para un piloto; **todavía no publicado ni aprobado para compradores**. No necesitas comprar un dominio: utiliza las URL HTTPS asignadas por Vercel y Render.
 

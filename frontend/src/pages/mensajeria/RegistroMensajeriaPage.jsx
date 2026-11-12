@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Truck, CheckCircle, AlertCircle, Eye, EyeOff, Loader2, ArrowLeft, ShieldCheck, MapPin, Bike, Car, Footprints } from 'lucide-react';
 import { api } from '../../services/api';
-import { useAuth } from '../../context/AuthContext';
-import { isSupabaseConfigured, supabase } from '../../services/supabaseClient';
 
 const VEHICLE_OPTIONS = [
   { id: 'moto', label: 'Motocicleta', icon: '🏍️', description: 'Ideal para entregas rápidas' },
@@ -14,7 +12,6 @@ const VEHICLE_OPTIONS = [
 
 export default function RegistroMensajeriaPage() {
   const navigate = useNavigate();
-  const { register } = useAuth();
   const [form, setForm] = useState({
     full_name: '',
     email: '',
@@ -43,8 +40,8 @@ export default function RegistroMensajeriaPage() {
     setError('');
 
     // Validaciones
-    if (form.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
+    if (form.password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.');
       return;
     }
 
@@ -61,7 +58,7 @@ export default function RegistroMensajeriaPage() {
     setLoading(true);
 
     try {
-      // 1. Enviar la solicitud de mensajería a la API / almacenamiento
+      // El backend crea la identidad bloqueada y solo el administrador puede activarla.
       await api.registerDeliveryRequest({
         full_name: form.full_name,
         email: form.email,
@@ -73,28 +70,6 @@ export default function RegistroMensajeriaPage() {
         password: form.password,
         notes: form.notes
       });
-
-      // 2. Si Supabase está configurado, registrar la cuenta en Supabase Auth
-      if (isSupabaseConfigured && supabase) {
-        try {
-          await supabase.auth.signUp({
-            email: form.email,
-            password: form.password,
-            options: {
-              data: {
-                full_name: form.full_name,
-                phone: form.phone,
-                vehicle_type: form.vehicle_type,
-                vehicle_plate: form.vehicle_plate,
-                status: 'pendiente_aprobacion',
-                role: 'cliente' // Permanece como cliente hasta que el admin apruebe el rol mensajeria
-              }
-            }
-          });
-        } catch (supabaseErr) {
-          console.warn('[Registro Mensajería] Aviso Auth Supabase:', supabaseErr.message);
-        }
-      }
 
       setSubmitted(true);
     } catch (err) {
@@ -368,12 +343,12 @@ export default function RegistroMensajeriaPage() {
                     <input
                       type={showPassword ? 'text' : 'password'}
                       required
-                      minLength={6}
+                      minLength={8}
                       maxLength={128}
                       name="password"
                       value={form.password}
                       onChange={handleChange}
-                      placeholder="Mínimo 6 caracteres"
+                      placeholder="Mínimo 8 caracteres"
                       className="w-full rounded-xl border border-[#7A4E2D]/25 bg-white px-3.5 py-2.5 text-sm text-[#4B2E1F] pr-10 focus:outline-none focus:ring-2 focus:ring-[#5F8D4E]"
                     />
                     <button
@@ -394,7 +369,7 @@ export default function RegistroMensajeriaPage() {
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
-                    minLength={6}
+                    minLength={8}
                     maxLength={128}
                     name="password_confirm"
                     value={form.password_confirm}

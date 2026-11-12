@@ -10,5 +10,6 @@ test('módulos requieren permisos específicos', () => {
   assert.equal(requiredRoutePermission('/mensajeria'), 'delivery.read_assigned');
   assert.equal(requiredRoutePermission('/admin', '?modulo=accesos'), 'access.manage');
   assert.equal(requiredRoutePermission('/admin', '?modulo=productos'), 'products.manage');
+  assert.equal(requiredRoutePermission('/admin', '?modulo=solicitudes-mensajeria'), 'users.manage');
   assert.equal(requiredRoutePermission('/'), null);
 });

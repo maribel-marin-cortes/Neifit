@@ -62,11 +62,13 @@ empresa activa. Las tablas comerciales guardan `empresa_id`, las relaciones de d
 usan claves compuestas y las RPC de servidor reciben `p_empresa`.
 
 Para una instalación existente en español ejecuta, en orden, `0010_ajustes_esquema_espanol.sql`,
-`0011_multiempresa.sql`, `0012_datos_demo_multiempresa.sql` y
-`0013_temas_aislamiento_multiempresa.sql`. No vuelvas a ejecutar el instalador completo ni
+`0011_multiempresa.sql`, `0012_datos_demo_multiempresa.sql`,
+`0013_temas_aislamiento_multiempresa.sql`, `0014_solicitudes_mensajeria.sql` y
+`0015_aprobacion_mensajeria_segura.sql`. No vuelvas a ejecutar el instalador completo ni
 elimines tablas. La migración 0013 crea temas, roles empresariales independientes, Storage
-segmentado y una administración de plataforma separada; no designa superadministradores
-automáticamente.
+segmentado y una administración de plataforma separada; las migraciones 0014 y 0015 crean
+el registro de mensajeros, mantienen la identidad bloqueada durante la revisión y asignan
+el rol empresarial únicamente al aprobar. No designan superadministradores automáticamente.
 
 ## Qué se guarda
 
