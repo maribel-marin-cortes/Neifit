@@ -110,8 +110,126 @@ export const api = {
   selectCompany(slug) { localStorage.setItem('neifit_empresa', slug); window.dispatchEvent(new Event('neifit-company-change')); },
   getCompanyTheme() { return request('/sitio/tema'); },
   updateCompanyTheme(data) { return request('/sitio/tema', { method: 'PUT', body: JSON.stringify(data) }); },
-  getNotifications() { return request('/notificaciones'); },
-  readNotification(id) { return request(`/notificaciones/${id}/leer`, { method: 'PATCH' }); },
+  async getNotifications() {
+    try {
+      return await request('/notificaciones');
+    } catch (error) {
+      if (isSupabaseConfigured) throw error;
+      return getStored('notificaciones', [
+        {
+          id: 'notif-del-001',
+          title: 'Nueva solicitud de mensajero',
+          message: 'Mateo Valencia Ospina solicitó registrarse como mensajero (moto - KTM-45F). Requiere tu aprobación.',
+          link: '/admin?modulo=solicitudes-mensajeria',
+          created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+          read_at: null
+        }
+      ]);
+    }
+  },
+  async readNotification(id) {
+    try {
+      return await request(`/notificaciones/${id}/leer`, { method: 'PATCH' });
+    } catch (error) {
+      if (isSupabaseConfigured) throw error;
+      const current = getStored('notificaciones', []);
+      const notif = current.find(n => n.id === id);
+      if (notif) notif.read_at = new Date().toISOString();
+      setStored('notificaciones', current);
+      return { ok: true };
+    }
+  },
+  async getDeliveryRequests() {
+    try {
+      return await request('/operaciones/solicitudes-mensajeria');
+    } catch (error) {
+      if (isSupabaseConfigured) throw error;
+      return getStored('solicitudes_mensajeria', [
+        {
+          id: 'req-del-001',
+          full_name: 'Mateo Valencia Ospina',
+          email: 'mateo.valencia@gmail.com',
+          phone: '+57 314 8899001',
+          document_id: '1037654321',
+          vehicle_type: 'moto',
+          vehicle_plate: 'KTM-45F',
+          city: 'Medellín',
+          status: 'pendiente',
+          rejection_reason: '',
+          created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+          notes: 'Experiencia en reparto con maletín térmico.'
+        }
+      ]);
+    }
+  },
+  async registerDeliveryRequest(data) {
+    try {
+      return await request('/operaciones/solicitudes-mensajeria', { method: 'POST', body: JSON.stringify(data) });
+    } catch (error) {
+      if (isSupabaseConfigured) throw error;
+      const current = getStored('solicitudes_mensajeria', []);
+      const newReq = {
+        id: `req-${Date.now()}`,
+        status: 'pendiente',
+        created_at: new Date().toISOString(),
+        rejection_reason: '',
+        ...data
+      };
+      setStored('solicitudes_mensajeria', [newReq, ...current]);
+      const notifs = getStored('notificaciones', []);
+      notifs.unshift({
+        id: `notif-${Date.now()}`,
+        title: 'Nueva solicitud de mensajero',
+        message: `${data.full_name} solicitó registrarse como mensajero (${data.vehicle_type} - ${data.vehicle_plate || 'Sin placa'}). Requiere tu aprobación.`,
+        link: '/admin?modulo=solicitudes-mensajeria',
+        created_at: new Date().toISOString(),
+        read_at: null
+      });
+      setStored('notificaciones', notifs);
+      return newReq;
+    }
+  },
+  async approveDeliveryRequest(id) {
+    try {
+      return await request(`/operaciones/solicitudes-mensajeria/${id}/aprobar`, { method: 'POST' });
+    } catch (error) {
+      if (isSupabaseConfigured) throw error;
+      const current = getStored('solicitudes_mensajeria', []);
+      const req = current.find(r => r.id === id);
+      if (req) {
+        req.status = 'aprobado';
+        req.reviewed_at = new Date().toISOString();
+        setStored('solicitudes_mensajeria', current);
+        const notifs = getStored('notificaciones', []);
+        notifs.unshift({
+          id: `notif-${Date.now()}`,
+          title: '¡Solicitud de mensajero aprobada!',
+          message: `La cuenta de mensajería para ${req.full_name} ha sido aprobada. Ya tiene permiso para realizar entregas.`,
+          link: '/mensajeria',
+          created_at: new Date().toISOString(),
+          read_at: null
+        });
+        setStored('notificaciones', notifs);
+      }
+      return req || { id, status: 'aprobado' };
+    }
+  },
+  async rejectDeliveryRequest(id, reason = '') {
+    try {
+      return await request(`/operaciones/solicitudes-mensajeria/${id}/rechazar`, { method: 'POST', body: JSON.stringify({ reason }) });
+    } catch (error) {
+      if (isSupabaseConfigured) throw error;
+      const current = getStored('solicitudes_mensajeria', []);
+      const req = current.find(r => r.id === id);
+      if (req) {
+        req.status = 'rechazado';
+        req.rejection_reason = reason;
+        req.reviewed_at = new Date().toISOString();
+        setStored('solicitudes_mensajeria', current);
+      }
+      return req || { id, status: 'rechazado' };
+    }
+  },
   respondQuote(id, data) { return request(`/cotizaciones/${id}/respuesta`, { method: 'POST', body: JSON.stringify(data) }); },
   confirmCash(id, data) { return request(`/pedidos/${id}/recibo-efectivo`, { method: 'POST', body: JSON.stringify(data) }); },
   getAccount() { return request('/cuenta'); },

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { safeReturnTo, loginDestination } from '../services/accessPolicy';
 import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Truck } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import { startGoogleSignIn, finishGoogleSignIn } from '../services/googleAuth';
 
@@ -204,6 +204,16 @@ export default function LoginPage({ initialMode = 'login' }) {
                 </button>
               </p>
             )}
+          </div>
+
+          <div className="mt-4 p-3 bg-[#E8F3D6] border border-[#5F8D4E]/30 rounded-xl text-center">
+            <p className="text-xs text-[#4B2E1F] font-medium">¿Quieres realizar entregas con nosotros?</p>
+            <Link
+              to="/mensajeria/registro"
+              className="text-xs font-bold text-[#5F8D4E] hover:underline flex items-center justify-center gap-1.5 mt-1"
+            >
+              <Truck className="w-3.5 h-3.5" /> Postúlate como mensajero
+            </Link>
           </div>
 
           {/* Demo role shortcuts */}

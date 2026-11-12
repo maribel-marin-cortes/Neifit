@@ -26,11 +26,27 @@ export default function MensajeriaPage() {
 
   if (!canAccess) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
-        <AlertTriangle className="w-12 h-12 text-red-400" />
-        <h2 className="font-display font-bold text-2xl text-[#4B2E1F]">Acceso restringido</h2>
-        <p className="text-[#7A4E2D]/70">Solo el personal de mensajería puede acceder a este panel.</p>
-        <Link to="/" className="btn-primary">Ir al inicio</Link>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center py-16">
+        <div className="w-16 h-16 bg-[#5F8D4E]/15 rounded-full flex items-center justify-center text-[#5F8D4E] mb-2">
+          <Truck className="w-8 h-8" />
+        </div>
+        <h2 className="font-display font-bold text-2xl text-[#4B2E1F]">Panel de Mensajería Neifit</h2>
+        <p className="text-[#7A4E2D]/80 max-w-md">
+          {user
+            ? 'Tu cuenta actual no tiene permisos activos de mensajería o tu solicitud se encuentra en proceso de aprobación por el administrador.'
+            : 'Para acceder a las rutas y pedidos asignados debes iniciar sesión con tu cuenta de mensajero aprobada.'}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 mt-4">
+          <Link to="/mensajeria/registro" className="btn-primary">
+            Postularme como mensajero
+          </Link>
+          <Link to="/login" className="px-5 py-2.5 rounded-xl border border-[#7A4E2D]/30 text-[#4B2E1F] text-sm font-semibold hover:bg-[#FFF8F2]">
+            Iniciar sesión
+          </Link>
+          <Link to="/" className="px-5 py-2.5 text-[#7A4E2D]/70 text-sm hover:underline flex items-center justify-center">
+            Volver al inicio
+          </Link>
+        </div>
       </div>
     );
   }

@@ -20,6 +20,7 @@ import AdminPage from '../pages/admin/AdminPage';
 import AccessManagement from '../pages/admin/AccessManagement';
 import ProductEditor from '../pages/admin/ProductEditor';
 import MensajeriaPage from '../pages/mensajeria/MensajeriaPage';
+import RegistroMensajeriaPage from '../pages/mensajeria/RegistroMensajeriaPage';
 import EmpresasPage from '../pages/EmpresasPage';
 import { useAuth } from '../context/AuthContext';
 
@@ -62,6 +63,7 @@ export default function AppRouter() {
       {/* Auth */}
       <Route path="/login" element={<LayoutMinimal><LoginPage /></LayoutMinimal>} />
       <Route path="/registro" element={<LayoutMinimal><LoginPage key="register" initialMode="register" /></LayoutMinimal>} />
+      <Route path="/mensajeria/registro" element={<LayoutMinimal><RegistroMensajeriaPage /></LayoutMinimal>} />
       <Route path="/auth/callback" element={<LayoutMinimal><GoogleCallbackPage /></LayoutMinimal>} />
       <Route path="/recuperar-contrasena" element={<LayoutMinimal><PasswordRecoveryPage /></LayoutMinimal>} />
       <Route path="/restablecer-contrasena" element={<LayoutMinimal><PasswordRecoveryPage reset /></LayoutMinimal>} />

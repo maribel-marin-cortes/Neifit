@@ -31,6 +31,7 @@ export default function Sidebar({ open }) {
   ];
   groups.push({ title: 'Administración', items: [
     { to: '/admin', label: 'Resumen', icon: LayoutDashboard },
+    { to: '/admin?modulo=solicitudes-mensajeria', label: 'Solicitudes mensajería', icon: Truck },
     { to: '/admin?modulo=productos', label: 'Productos e inventario', icon: Package },
     { to: '/admin?modulo=pedidos', label: 'Pedidos', icon: ShoppingBag },
     { to: '/admin?modulo=cotizaciones', label: 'Cotizaciones', icon: FileText },
@@ -39,7 +40,8 @@ export default function Sidebar({ open }) {
     { to: '/usuarios', label: 'Usuarios', icon: User },
   ] });
   groups.push({ title: 'Entregas', items: [
-    { to: '/mensajeria', label: 'Mensajería', icon: Truck },
+    { to: '/mensajeria', label: 'Panel de entregas', icon: Truck },
+    ...(!isMensajeria ? [{ to: '/mensajeria/registro', label: 'Registro de mensajeros', icon: Truck }] : [])
   ] });
   const roleGroups = isMensajeria
     ? [{ title: 'Principal', items: [{ to: '/', label: 'Inicio', icon: Home }] }, ...groups.filter(group => ['Mi cuenta', 'Entregas'].includes(group.title))]

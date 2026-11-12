@@ -8,7 +8,8 @@ from app.core.supabase_rest import database_enabled, supabase_rest as db
 
 
 DEFAULT_COMPANY_ID = '00000000-0000-0000-0000-000000000001'
-_company = ContextVar('neifit_company', default=None)
+DEFAULT_COMPANY = {'id': DEFAULT_COMPANY_ID, 'slug': 'neifit', 'nombre': 'Neifit', 'estado': 'activa'}
+_company = ContextVar('neifit_company', default=DEFAULT_COMPANY)
 
 
 async def establish_company(x_empresa: str | None = Header(default=None, alias='X-Empresa')) -> dict:
@@ -34,9 +35,7 @@ async def establish_company(x_empresa: str | None = Header(default=None, alias='
 
 def current_company() -> dict:
     company = _company.get()
-    if not company:
-        raise HTTPException(status_code=500, detail='No se estableció el contexto de empresa')
-    return company
+    return company or DEFAULT_COMPANY
 
 
 def current_company_id() -> str:

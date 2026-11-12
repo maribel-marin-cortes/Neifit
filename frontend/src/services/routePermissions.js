@@ -5,6 +5,7 @@ export function requiredRoutePermission(pathname, search = '') {
     const module = new URLSearchParams(search).get('modulo');
     return ({ accesos: 'access.manage', productos: 'products.manage', cotizaciones: 'quotes.manage', contenido: 'content.manage', apariencia: 'appearance.manage' })[module] || 'orders.manage';
   }
+  if (pathname === '/mensajeria/registro') return null;
   if (pathname.startsWith('/mensajeria')) return 'delivery.read_assigned';
   if (pathname.startsWith('/catalogo') || pathname.startsWith('/productos')) return 'catalog.read';
   if (pathname === '/carrito' || pathname === '/checkout') return 'orders.create';

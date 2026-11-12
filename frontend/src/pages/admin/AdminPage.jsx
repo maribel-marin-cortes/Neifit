@@ -12,13 +12,15 @@ import { formatCOP } from '../../components/ProductCard';
 import { adminOrderStatusOptions, orderStatusLabel } from '../../services/orderStatusFlow';
 import {
   Package, Users, ShoppingBag, FileText, Settings,
-  Plus, Edit3, Trash2, Check, X, AlertTriangle, Loader2, BarChart2, Palette
+  Plus, Edit3, Trash2, Check, X, AlertTriangle, Loader2, BarChart2, Palette,
+  Truck, CheckCircle2, XCircle, Clock, Phone, Mail, MapPin
 } from 'lucide-react';
 
 const TABS = [
   { key: 'contenido', label: 'Contenido institucional', icon: Settings },
   { key: 'apariencia', label: 'Apariencia', icon: Palette },
   { key: 'accesos', label: 'Roles y permisos', icon: Users },
+  { key: 'solicitudes-mensajeria', label: 'Solicitudes mensajería', icon: Truck },
   { key: 'dashboard', label: 'Dashboard', icon: BarChart2 },
   { key: 'productos', label: 'Productos', icon: Package },
   { key: 'pedidos', label: 'Pedidos', icon: ShoppingBag },
@@ -34,6 +36,10 @@ export default function AdminPage() {
   const [orders, setOrders] = useState([]);
   const [quotes, setQuotes] = useState([]);
   const [deliveryUsers, setDeliveryUsers] = useState([]);
+  const [deliveryRequests, setDeliveryRequests] = useState([]);
+  const [requestActionLoading, setRequestActionLoading] = useState(null);
+  const [requestSuccessNotice, setRequestSuccessNotice] = useState('');
+  const [requestFilter, setRequestFilter] = useState('todos');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [reloadVersion, setReloadVersion] = useState(0);
@@ -49,17 +55,19 @@ export default function AdminPage() {
       if (initial) setLoading(true);
       setLoadError('');
       try {
-        const [prods, ords, quots, couriers] = await Promise.all([
+        const [prods, ords, quots, couriers, delivReqs] = await Promise.all([
       ['dashboard', 'productos'].includes(tab) && hasPermission('products.manage') ? api.getProducts({ include_inactive: true }) : Promise.resolve([]),
       ['dashboard', 'pedidos'].includes(tab) && hasPermission('orders.manage') ? api.getOrders() : Promise.resolve([]),
       tab === 'cotizaciones' && hasPermission('quotes.manage') ? api.getQuotes() : Promise.resolve([]),
-      tab === 'pedidos' && hasPermission('orders.manage') ? api.getDeliveryUsers() : Promise.resolve([])
+      tab === 'pedidos' && hasPermission('orders.manage') ? api.getDeliveryUsers() : Promise.resolve([]),
+      ['dashboard', 'solicitudes-mensajeria'].includes(tab) ? api.getDeliveryRequests() : Promise.resolve([])
         ]);
         if (active) {
           setProducts(prods);
           setOrders(ords);
           setQuotes(quots);
           setDeliveryUsers(couriers);
+          setDeliveryRequests(delivReqs);
         }
       } catch (err) { if (active) setLoadError(err.message); }
       finally { inFlight = false; if (active) setLoading(false); }
@@ -92,6 +100,40 @@ export default function AdminPage() {
   const totalRevenue = orders.filter(o => o.payment_status === 'aprobado' && !o.is_simulated).reduce((a, o) => a + (o.total || 0), 0);
   const pendingOrders = orders.filter(o => !['entregado','cancelado'].includes(o.order_status)).length;
   const availableProducts = products.filter(p => p.is_available).length;
+  const pendingDeliveryRequests = deliveryRequests.filter(r => r.status === 'pendiente').length;
+
+  const handleApproveDelivery = async (reqId) => {
+    setRequestActionLoading(reqId);
+    setRequestSuccessNotice('');
+    setLoadError('');
+    try {
+      await api.approveDeliveryRequest(reqId);
+      setDeliveryRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: 'aprobado' } : r));
+      setRequestSuccessNotice('Solicitud aprobada con éxito. Se habilitó el acceso para este mensajero.');
+      setReloadVersion(v => v + 1);
+    } catch (err) {
+      setLoadError('Error al aprobar solicitud: ' + err.message);
+    } finally {
+      setRequestActionLoading(null);
+    }
+  };
+
+  const handleRejectDelivery = async (reqId) => {
+    const reason = window.prompt('Indica el motivo de rechazo (opcional):', 'No cumple con los requisitos del vehículo o disponibilidad.');
+    if (reason === null) return;
+    setRequestActionLoading(reqId);
+    setRequestSuccessNotice('');
+    setLoadError('');
+    try {
+      await api.rejectDeliveryRequest(reqId, reason);
+      setDeliveryRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: 'rechazado', rejection_reason: reason } : r));
+      setRequestSuccessNotice('Solicitud rechazada.');
+    } catch (err) {
+      setLoadError('Error al rechazar solicitud: ' + err.message);
+    } finally {
+      setRequestActionLoading(null);
+    }
+  };
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
