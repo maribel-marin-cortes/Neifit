@@ -141,7 +141,7 @@ export const api = {
   },
   async getDeliveryRequests() {
     try {
-      return await request('/operaciones/solicitudes-mensajeria');
+      return await request('/solicitudes-mensajeria');
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       return getStored('solicitudes_mensajeria', [
@@ -164,7 +164,7 @@ export const api = {
   },
   async registerDeliveryRequest(data) {
     try {
-      return await request('/operaciones/solicitudes-mensajeria', { method: 'POST', body: JSON.stringify(data) });
+      return await request('/solicitudes-mensajeria', { method: 'POST', body: JSON.stringify(data) });
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       const current = getStored('solicitudes_mensajeria', []);
@@ -191,7 +191,7 @@ export const api = {
   },
   async approveDeliveryRequest(id) {
     try {
-      return await request(`/operaciones/solicitudes-mensajeria/${id}/aprobar`, { method: 'POST' });
+      return await request(`/solicitudes-mensajeria/${id}/aprobar`, { method: 'POST' });
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       const current = getStored('solicitudes_mensajeria', []);
@@ -216,7 +216,7 @@ export const api = {
   },
   async rejectDeliveryRequest(id, reason = '') {
     try {
-      return await request(`/operaciones/solicitudes-mensajeria/${id}/rechazar`, { method: 'POST', body: JSON.stringify({ reason }) });
+      return await request(`/solicitudes-mensajeria/${id}/rechazar`, { method: 'POST', body: JSON.stringify({ reason }) });
     } catch (error) {
       if (isSupabaseConfigured) throw error;
       const current = getStored('solicitudes_mensajeria', []);

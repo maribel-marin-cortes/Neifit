@@ -22,6 +22,15 @@ test('las acciones administrativas usan la API y conservan la sesión del admini
   assert.equal(JSON.parse(requests[1][1].body).status, 'respondida');
 });
 
+test('mensajería usa las rutas reales publicadas por el backend', async () => {
+  const { api, requests } = await loadApi(true, async () => ({ ok: true, json: async () => [] }));
+  await api.getDeliveryRequests();
+  await api.approveDeliveryRequest('11111111-1111-4111-8111-111111111111');
+  assert.equal(new URL(requests[0][0]).pathname, '/api/v1/solicitudes-mensajeria');
+  assert.equal(new URL(requests[1][0]).pathname,
+    '/api/v1/solicitudes-mensajeria/11111111-1111-4111-8111-111111111111/aprobar');
+});
+
 async function loadApi(configured, fetchImpl, session = { access_token: 'supabase-jwt' }, refresh = async () => ({ data: { session: { access_token: 'renewed-jwt' } }, error: null })) {
   const storage = new Map([['neifit_token', 'old-demo-token']]);
   const requests = [];
